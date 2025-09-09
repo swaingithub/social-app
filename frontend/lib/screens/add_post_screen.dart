@@ -22,113 +22,145 @@ class _AddPostScreenState extends State<AddPostScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header with back button and Post button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                    onPressed: () => context.pop(),
-                  ),
-                  TextButton(
-                    onPressed: postProvider.isLoading
-                        ? null
-                        : () {
-                            postProvider
-                                .createPost(
-                              _captionController.text,
-                              _imageUrlController.text,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header with back button and Post button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                      onPressed: () => context.pop(),
+                    ),
+                    TextButton(
+                      onPressed: postProvider.isLoading
+                          ? null
+                          : () {
+                              postProvider
+                                  .createPost(
+                                _captionController.text,
+                                _imageUrlController.text,
+                              )
+                                  .then((_) {
+                                if (mounted) {
+                                  context.go('/');
+                                }
+                              });
+                            },
+                      child: postProvider.isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                                .then((_) {
-                              if (mounted) {
-                                context.go('/');
-                              }
-                            });
-                          },
-                    child: postProvider.isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text(
-                            'Post',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          : const Text(
+                              'Post',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // Image URL input and preview
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade800),
-                      image: _imageUrlController.text.isNotEmpty
-                          ? DecorationImage(
-                              image: NetworkImage(_imageUrlController.text),
-                              fit: BoxFit.cover,
+              // Image URL input and preview
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 250,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade800),
+                        image: _imageUrlController.text.isNotEmpty
+                            ? DecorationImage(
+                                image: NetworkImage(_imageUrlController.text),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: _imageUrlController.text.isEmpty
+                          ? Center(
+                              child: Icon(Icons.image_outlined, color: Colors.grey.shade700, size: 60),
                             )
                           : null,
                     ),
-                    child: _imageUrlController.text.isEmpty
-                        ? const Center(
-                            child: Icon(Icons.image, color: Colors.grey, size: 50),
-                          )
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _imageUrlController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Enter Image URL...',
-                      hintStyle: TextStyle(color: Colors.grey.shade500),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade800),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _imageUrlController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Enter Image URL...',
+                        hintStyle: TextStyle(color: Colors.grey.shade500),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade800),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade800),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade800),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
+                      onChanged: (value) => setState(() {}),
                     ),
-                    onChanged: (value) => setState(() {}),
-                  ),
-                ],
-              ),
-            ),
-            // Caption input
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TextField(
-                controller: _captionController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Write a caption...',
-                  hintStyle: TextStyle(color: Colors.grey.shade500),
-                  border: InputBorder.none,
+                  ],
                 ),
-                maxLines: 4,
               ),
-            ),
+              // Caption input
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  controller: _captionController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Write a caption...',
+                    hintStyle: TextStyle(color: Colors.grey.shade500),
+                    border: InputBorder.none,
+                  ),
+                  maxLines: 3,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Additional options
+              Divider(color: Colors.grey.shade800, height: 1),
+              _buildOptionRow(Icons.person_add_alt_1_outlined, 'Tag people'),
+              Divider(color: Colors.grey.shade800, height: 1),
+              _buildOptionRow(Icons.music_note_outlined, 'Add music'),
+              Divider(color: Colors.grey.shade800, height: 1),
+              _buildOptionRow(Icons.location_on_outlined, 'Add location'),
+              Divider(color: Colors.grey.shade800, height: 1),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionRow(IconData icon, String title) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement option functionality
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            const SizedBox(width: 16),
+            Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+            const Spacer(),
+            Icon(Icons.chevron_right, color: Colors.grey.shade600, size: 24),
           ],
         ),
       ),
