@@ -1,10 +1,13 @@
 import 'dart:ui';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final FirebaseAuth? auth;
+  final bool isTest;
+  const LoginScreen({super.key, this.auth, this.isTest = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();

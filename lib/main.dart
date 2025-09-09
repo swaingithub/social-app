@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -46,33 +45,70 @@ class MyApp extends StatelessWidget {
 
 ThemeData _buildTheme(Brightness brightness) {
   var baseTheme = ThemeData(brightness: brightness);
-  const primaryColor = Color(0xFFE91E63);
-  const secondaryColor = Color(0xFFFFC107);
+  const primaryColor = Color(0xFF8E44AD);
+  const secondaryColor = Color(0xFFF1C40F);
 
   return baseTheme.copyWith(
     primaryColor: primaryColor,
     colorScheme: baseTheme.colorScheme.copyWith(
       primary: primaryColor,
       secondary: secondaryColor,
+      surface: brightness == Brightness.light ? const Color(0xFFECF0F1) : const Color(0xFF2C3E50),
+      background: brightness == Brightness.light ? const Color(0xFFFFFFFF) : const Color(0xFF212F3D),
     ),
-    textTheme: GoogleFonts.poppinsTextTheme(baseTheme.textTheme),
-    appBarTheme: const AppBarTheme(
+    textTheme: GoogleFonts.nunitoTextTheme(baseTheme.textTheme).apply(
+      bodyColor: brightness == Brightness.light ? const Color(0xFF2C3E50) : const Color(0xFFECF0F1),
+      displayColor: brightness == Brightness.light ? const Color(0xFF2C3E50) : const Color(0xFFECF0F1),
+    ),
+    appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      iconTheme: IconThemeData(color: primaryColor),
+      iconTheme: IconThemeData(color: brightness == Brightness.light ? const Color(0xFF2C3E50) : const Color(0xFFECF0F1)),
       titleTextStyle: TextStyle(
-        color: primaryColor,
-        fontSize: 20,
+        color: brightness == Brightness.light ? const Color(0xFF2C3E50) : const Color(0xFFECF0F1),
+        fontSize: 22,
         fontWeight: FontWeight.bold,
+        fontFamily: GoogleFonts.nunito().fontFamily,
       ),
     ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: brightness == Brightness.light ? const Color(0xFFFFFFFF) : const Color(0xFF2C3E50),
       selectedItemColor: primaryColor,
       unselectedItemColor: Colors.grey,
       showSelectedLabels: false,
       showUnselectedLabels: false,
       type: BottomNavigationBarType.fixed,
+    ),
+    cardTheme: CardThemeData(
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: brightness == Brightness.light ? Colors.white : const Color(0xFF2C3E50),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      hintStyle: TextStyle(
+        color: Colors.grey,
+        fontFamily: GoogleFonts.nunito().fontFamily,
+      ),
     ),
   );
 }

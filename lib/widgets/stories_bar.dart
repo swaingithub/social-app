@@ -40,14 +40,19 @@ class _StoryAvatar extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  Colors.yellow.shade600,
-                  Colors.orange.shade400,
-                  Colors.red.shade500,
-                  Colors.pink.shade500,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.7),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(4.0),
@@ -85,7 +90,7 @@ class _StoryAvatar extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'username$index',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -105,9 +110,14 @@ class _YourStoryAvatar extends StatelessWidget {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=me'),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[300],
+                ),
+                child: const Icon(Icons.person, size: 40, color: Colors.grey),
               ),
               Positioned(
                 bottom: 0,
@@ -116,7 +126,7 @@ class _YourStoryAvatar extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Theme.of(context).scaffoldBackgroundColor,
@@ -129,9 +139,9 @@ class _YourStoryAvatar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Your Story',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),

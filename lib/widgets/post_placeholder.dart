@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 
 class PostPlaceholder extends StatelessWidget {
   const PostPlaceholder({super.key});

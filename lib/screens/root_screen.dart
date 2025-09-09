@@ -1,38 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/screens/home_screen.dart';
-import 'package:social_media_app/screens/explore_screen.dart';
-import 'package:social_media_app/screens/add_post_screen.dart';
-import 'package:social_media_app/screens/profile_screen.dart';
+import 'package:go_router/go_router.dart';
 
-class RootScreen extends StatefulWidget {
-  const RootScreen({super.key});
+class RootScreen extends StatelessWidget {
+  const RootScreen({super.key, required this.child});
 
-  @override
-  State<RootScreen> createState() => _RootScreenState();
-}
-
-class _RootScreenState extends State<RootScreen> {
-  int _selectedIndex = 0;
-
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(),
-    ExploreScreen(),
-    AddPostScreen(),
-    ProfileScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: child,
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -52,13 +29,47 @@ class _RootScreenState extends State<RootScreen> {
             label: 'Profile',
           ),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: _calculateSelectedIndex(context),
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        onTap: _onItemTapped,
+        onTap: (index) => _onItemTapped(index, context),
       ),
     );
+  }
+
+  int _calculateSelectedIndex(BuildContext context) {
+    final String location = GoRouterState.of(context).uri.toString();
+    if (location == '/') {
+      return 0;
+    }
+    if (location == '/explore') {
+      return 1;
+    }
+    if (location == '/add-post') {
+      return 2;
+    }
+    if (location == '/profile') {
+      return 3;
+    }
+    return 0;
+  }
+
+  void _onItemTapped(int index, BuildContext context) {
+    switch (index) {
+      case 0:
+        context.go('/');
+        break;
+      case 1:
+        context.go('/explore');
+        break;
+      case 2:
+        context.go('/add-post');
+        break;
+      case 3:
+        context.go('/profile');
+        break;
+    }
   }
 }
