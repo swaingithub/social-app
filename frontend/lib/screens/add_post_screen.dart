@@ -20,53 +20,114 @@ class _AddPostScreenState extends State<AddPostScreen> {
     final postProvider = Provider.of<PostProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Post'),
-        actions: [
-          IconButton(
-            onPressed: postProvider.isLoading
-                ? null
-                : () {
-                    postProvider
-                        .createPost(
-                      _captionController.text,
-                      _imageUrlController.text,
-                    )
-                        .then((_) {
-                      if (mounted) {
-                        context.pop();
-                      }
-                    });
-                  },
-            icon: postProvider.isLoading
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.send),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      backgroundColor: Colors.black,
+      body: SafeArea(
         child: Column(
           children: [
-            TextField(
-              controller: _imageUrlController,
-              decoration: const InputDecoration(
-                hintText: 'Image URL',
-                border: InputBorder.none,
+            // Header with back button and Post button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                    onPressed: () => context.pop(),
+                  ),
+                  TextButton(
+                    onPressed: postProvider.isLoading
+                        ? null
+                        : () {
+                            postProvider
+                                .createPost(
+                              _captionController.text,
+                              _imageUrlController.text,
+                            )
+                                .then((_) {
+                              if (mounted) {
+                                context.go('/');
+                              }
+                            });
+                          },
+                    child: postProvider.isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text(
+                            'Post',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _captionController,
-              decoration: const InputDecoration(
-                hintText: 'Write a caption...',
-                border: InputBorder.none,
+            // Image URL input and preview
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade800),
+                      image: _imageUrlController.text.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(_imageUrlController.text),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: _imageUrlController.text.isEmpty
+                        ? const Center(
+                            child: Icon(Icons.image, color: Colors.grey, size: 50),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _imageUrlController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Enter Image URL...',
+                      hintStyle: TextStyle(color: Colors.grey.shade500),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade800),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade800),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white),
+                      ),
+                    ),
+                    onChanged: (value) => setState(() {}),
+                  ),
+                ],
               ),
-              maxLines: 3,
+            ),
+            // Caption input
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextField(
+                controller: _captionController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Write a caption...',
+                  hintStyle: TextStyle(color: Colors.grey.shade500),
+                  border: InputBorder.none,
+                ),
+                maxLines: 4,
+              ),
             ),
           ],
         ),
