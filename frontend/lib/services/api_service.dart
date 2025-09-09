@@ -28,6 +28,11 @@ class ApiService {
     await prefs.setString('token', token);
   }
 
+  Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
   Future<void> register(String username, String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/users/register'),
@@ -43,11 +48,12 @@ class ApiService {
       final data = jsonDecode(response.body);
       await _setToken(data['token']);
     } else {
-      throw Exception('Failed to register');
+      final data = jsonDecode(response.body);
+      throw Exception(data['msg'] ?? 'Failed to register');
     }
   }
 
-  Future<void> login(String email, String password) async {
+  Future<User> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/users/login'),
       headers: {'Content-Type': 'application/json'},
@@ -60,8 +66,27 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       await _setToken(data['token']);
+      return await getMe();
     } else {
-      throw Exception('Failed to login');
+      final data = jsonDecode(response.body);
+      throw Exception(data['msg'] ?? 'Failed to login');
+    }
+  }
+
+  Future<User> getMe() async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/me'),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token ?? '',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to get user');
     }
   }
 

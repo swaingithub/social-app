@@ -18,10 +18,9 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
     try {
       await apiService.register(username, email, password);
-      // After registering, automatically log in the user
-      await login(email, password);
+      _user = await apiService.getMe();
     } catch (e) {
-      // Handle error
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -32,10 +31,34 @@ class UserProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      await apiService.login(email, password);
-      // After a successful login, fetch the user's data
-      // This is a placeholder, as the backend does not yet provide user data upon login
-      // _user = await apiService.getLoggedInUser(); 
+      _user = await apiService.login(email, password);
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> getMe() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _user = await apiService.getMe();
+    } catch (e) {
+      // Handle error
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> logout() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await apiService.clearToken();
+      _user = null;
     } catch (e) {
       // Handle error
     } finally {

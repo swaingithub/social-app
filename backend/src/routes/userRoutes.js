@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { register, login, getUserById, followUser, unfollowUser, updateUserSettings } = require('../controllers/userController');
+const { register, login, getMe, getUserById, followUser, unfollowUser, updateUserSettings } = require('../controllers/userController');
 const auth = require('../middleware/auth');
 
 // @route   POST api/users/register
@@ -13,6 +13,11 @@ router.post('/register', register);
 // @desc    Login user / Returns JWT
 // @access  Public
 router.post('/login', login);
+
+// @route   GET api/users/me
+// @desc    Get current user
+// @access  Private
+router.get('/me', auth, getMe);
 
 // @route   GET api/users/:id
 // @desc    Get user by ID

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_media_app/models/post.dart';
 import 'package:social_media_app/providers/user_provider.dart';
 import 'package:social_media_app/screens/add_post_screen.dart';
@@ -11,6 +12,7 @@ import 'package:social_media_app/screens/home_screen.dart';
 import 'package:social_media_app/screens/login_screen.dart';
 import 'package:social_media_app/screens/profile_screen.dart';
 import 'package:social_media_app/screens/root_screen.dart';
+import 'package:social_media_app/screens/signup_screen.dart';
 import 'package:social_media_app/screens/stories_screen.dart';
 
 class AppRouter {
@@ -24,6 +26,10 @@ class AppRouter {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignupScreen(),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
@@ -60,16 +66,23 @@ class AppRouter {
         builder: (context, state) => const AddPostScreen(),
       ),
     ],
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final loggedIn = userProvider.user != null;
-      final isLoggingIn = state.matchedLocation == '/login';
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final loggedIn = token != null;
 
-      if (!loggedIn && !isLoggingIn) {
+      final isLoggingIn = state.matchedLocation == '/login';
+      final isSigningUp = state.matchedLocation == '/signup';
+
+      if (!loggedIn && !isLoggingIn && !isSigningUp) {
         return '/login';
       }
 
-      if (loggedIn && isLoggingIn) {
+      if (loggedIn && (isLoggingIn || isSigningUp)) {
+        if (userProvider.user == null) {
+          await userProvider.getMe();
+        }
         return '/';
       }
 

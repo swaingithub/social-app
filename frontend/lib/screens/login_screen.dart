@@ -1,3 +1,4 @@
+
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -245,11 +246,25 @@ class _LoginScreenState extends State<LoginScreen> {
     return ElevatedButton(
       onPressed: userProvider.isLoading
           ? null
-          : () {
-              userProvider.login(
-                _emailController.text,
-                _passwordController.text,
-              );
+          : () async {
+              try {
+                await userProvider.login(
+                  _emailController.text,
+                  _passwordController.text,
+                );
+                if (context.mounted) {
+                  GoRouter.of(context).go('/');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
       style: ElevatedButton.styleFrom(
         backgroundColor: theme.primaryColor,

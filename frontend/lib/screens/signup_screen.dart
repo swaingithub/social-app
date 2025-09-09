@@ -1,10 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/providers/user_provider.dart';
-import 'package:social_media_app/screens/login_screen.dart';
-import 'package:social_media_app/screens/home_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -241,9 +241,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 );
                 
                 if (context.mounted) {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
+                  GoRouter.of(context).go('/');
                 }
               } catch (e) {
                 if (context.mounted) {
@@ -299,9 +297,7 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
         TextButton(
           onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-            );
+            GoRouter.of(context).go('/login');
           },
           child: Text(
             'Sign In',
