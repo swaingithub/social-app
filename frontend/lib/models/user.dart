@@ -2,14 +2,24 @@ class User {
   final String id;
   final String username;
   final String email;
+  final String bio;
+  final String profileImageUrl;
 
-  User({required this.id, required this.username, required this.email});
+  User({
+    required this.id,
+    required this.username,
+    required this.email,
+    required this.bio,
+    required this.profileImageUrl,
+  });
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: json['_id'],
-      username: json['username'],
-      email: json['email'],
+      id: map['id'] ?? '',
+      username: map['username'] ?? '',
+      email: map['email'] ?? '',
+      bio: map['bio'] ?? '',
+      profileImageUrl: map['profileImageUrl'] ?? '',
     );
   }
 }
