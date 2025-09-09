@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 class RootScreen extends StatelessWidget {
@@ -8,28 +9,41 @@ class RootScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorFilter activeColorFilter = ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn);
+    final ColorFilter inactiveColorFilter = ColorFilter.mode(Colors.grey, BlendMode.srcIn);
+
     return Scaffold(
-      body: child,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: SvgPicture.asset(
+              'assets/vectors/noise_texture.svg',
+              fit: BoxFit.cover,
+            ),
+          ),
+          child,
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            icon: SvgPicture.asset('assets/icons/home.svg', colorFilter: inactiveColorFilter),
+            activeIcon: SvgPicture.asset('assets/icons/home.svg', colorFilter: activeColorFilter),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.article_outlined),
-            activeIcon: Icon(Icons.article),
+            icon: SvgPicture.asset('assets/icons/stories.svg', colorFilter: inactiveColorFilter),
+            activeIcon: SvgPicture.asset('assets/icons/stories.svg', colorFilter: activeColorFilter),
             label: 'Stories',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined),
-            activeIcon: Icon(Icons.explore),
+            icon: SvgPicture.asset('assets/icons/explore.svg', colorFilter: inactiveColorFilter),
+            activeIcon: SvgPicture.asset('assets/icons/explore.svg', colorFilter: activeColorFilter),
             label: 'Explore',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
+            icon: SvgPicture.asset('assets/icons/profile.svg', colorFilter: inactiveColorFilter),
+            activeIcon: SvgPicture.asset('assets/icons/profile.svg', colorFilter: activeColorFilter),
             label: 'Profile',
           ),
         ],

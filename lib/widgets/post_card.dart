@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/models/post.dart';
@@ -74,20 +75,27 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
     return GestureDetector(
       onDoubleTap: () => _toggleLike(feedProvider),
       child: Container(
-        margin: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.0),
-          color: colorScheme.surface,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              colorScheme.surface.withOpacity(0.8),
+              colorScheme.surface,
+            ],
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
             BoxShadow(
-              color: Colors.white.withOpacity(0.7),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
+              color: Colors.white.withOpacity(0.5),
+              blurRadius: 20,
+              offset: const Offset(0, -10),
             ),
           ],
         ),
@@ -109,25 +117,25 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
 
   Widget _buildPostHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 20,
+            radius: 22,
             backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=${widget.post.author}'),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               widget.post.author,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.more_horiz),
+            icon: SvgPicture.asset('assets/icons/more.svg', colorFilter: ColorFilter.mode(Theme.of(context).iconTheme.color!, BlendMode.srcIn)),
             onPressed: () {},
-            color: Theme.of(context).iconTheme.color,
+            iconSize: 30,
           ),
         ],
       ),
@@ -138,18 +146,22 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Image.network(
-          widget.post.imageUrl!,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: 300,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            widget.post.imageUrl!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: 350,
+          ),
         ),
         ScaleTransition(
           scale: _favoriteIconAnimation,
-          child: const Icon(
-            Icons.favorite,
-            color: Colors.white,
-            size: 100,
+          child: SvgPicture.asset(
+            'assets/icons/like.svg',
+            colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.srcIn),
+            width: 120,
+            height: 120,
           ),
         ),
       ],
@@ -157,8 +169,10 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
   }
 
   Widget _buildPostActions(BuildContext context, FeedProvider feedProvider, bool isLiked) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -167,30 +181,33 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
               ScaleTransition(
                 scale: _likeAnimation,
                 child: IconButton(
-                  icon: Icon(
-                    isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: isLiked ? Colors.red : Theme.of(context).iconTheme.color,
-                    size: 28,
+                  icon: SvgPicture.asset(
+                    'assets/icons/like.svg',
+                    colorFilter: ColorFilter.mode(
+                      isLiked ? Colors.redAccent : colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
+                    width: 32,
+                    height: 32,
                   ),
                   onPressed: () => _toggleLike(feedProvider),
                 ),
               ),
+              const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.chat_bubble_outline, size: 28),
+                icon: SvgPicture.asset('assets/icons/comment.svg', width: 32, height: 32, colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn)),
                 onPressed: () => context.push('/comments', extra: widget.post),
-                color: Theme.of(context).iconTheme.color,
               ),
+              const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.send_outlined, size: 28),
+                icon: SvgPicture.asset('assets/icons/send.svg', width: 32, height: 32, colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn)),
                 onPressed: () {},
-                color: Theme.of(context).iconTheme.color,
               ),
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.bookmark_border, size: 28),
+            icon: SvgPicture.asset('assets/icons/bookmark.svg', width: 32, height: 32, colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn)),
             onPressed: () {},
-            color: Theme.of(context).iconTheme.color,
           ),
         ],
       ),
@@ -202,18 +219,18 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '${widget.post.likes.length} likes',
-            style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           RichText(
             text: TextSpan(
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+              style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface, height: 1.4),
               children: [
                 TextSpan(
                   text: '${widget.post.author} ',
@@ -222,6 +239,8 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
                 TextSpan(text: widget.post.caption),
               ],
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
