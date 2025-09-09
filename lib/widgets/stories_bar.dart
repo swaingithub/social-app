@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class StoriesBar extends StatelessWidget {
   const StoriesBar({super.key});
@@ -6,15 +7,15 @@ class StoriesBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 110,
+      height: 120,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 10, // 9 stories + 1 for the user
+        itemCount: 10,
         itemBuilder: (context, index) {
           if (index == 0) {
             return const _YourStoryAvatar();
           }
-          return const _StoryAvatar();
+          return _StoryAvatar(index: index);
         },
       ),
     );
@@ -22,7 +23,9 @@ class StoriesBar extends StatelessWidget {
 }
 
 class _StoryAvatar extends StatelessWidget {
-  const _StoryAvatar();
+  const _StoryAvatar({required this.index});
+
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +34,8 @@ class _StoryAvatar extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 70,
-            height: 70,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -47,23 +50,43 @@ class _StoryAvatar extends StatelessWidget {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(3.0),
+              padding: const EdgeInsets.all(4.0),
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Theme.of(context).cardColor,
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.all(3.0),
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage('https://picsum.photos/100'),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: ClipOval(
+                    child: Image.network(
+                      'https://i.pravatar.cc/150?u=story$index',
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: 72,
+                            height: 72,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          const Text('username', style: TextStyle(fontSize: 12)),
+          const SizedBox(height: 8),
+          Text(
+            'username$index',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
@@ -83,27 +106,33 @@ class _YourStoryAvatar extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               const CircleAvatar(
-                radius: 35,
-                backgroundImage: NetworkImage('https://picsum.photos/101'),
+                radius: 40,
+                backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=me'),
               ),
               Positioned(
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  width: 24,
-                  height: 24,
+                  width: 28,
+                  height: 28,
                   decoration: BoxDecoration(
                     color: Colors.blue,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                    border: Border.all(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      width: 2,
+                    ),
                   ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 18),
+                  child: const Icon(Icons.add, color: Colors.white, size: 20),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          const Text('Your Story', style: TextStyle(fontSize: 12)),
+          const SizedBox(height: 8),
+          const Text(
+            'Your Story',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );

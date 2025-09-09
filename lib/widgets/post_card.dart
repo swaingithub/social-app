@@ -1,154 +1,48 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:social_media_app/models/post.dart';
 
-class PostCard extends StatefulWidget {
-  final Post post;
-  const PostCard({super.key, required this.post});
+class PostCard extends StatelessWidget {
+  const PostCard({
+    super.key,
+    required this.username,
+    required this.avatarUrl,
+    required this.imageUrl,
+    required this.caption,
+  });
 
-  @override
-  State<PostCard> createState() => _PostCardState();
-}
-
-class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-  bool _isHeartVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  String _formatTimestamp(Timestamp timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp.toDate());
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m';
-    } else {
-      return 'Just now';
-    }
-  }
-
-  String _getAuthorUsername() {
-    final email = widget.post.author;
-    return email.split('@').first;
-  }
-
-  Future<void> _likePost() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to like a post.')),
-      );
-      return;
-    }
-
-    final postRef = FirebaseFirestore.instance.collection('posts').doc(widget.post.id);
-
-    final isLiked = widget.post.likes.contains(currentUser.uid);
-
-    if (isLiked) {
-      await postRef.update({
-        'likes': FieldValue.arrayRemove([currentUser.uid])
-      });
-    } else {
-      setState(() {
-        _isHeartVisible = true;
-        _animationController.forward(from: 0);
-      });
-
-      await postRef.update({
-        'likes': FieldValue.arrayUnion([currentUser.uid])
-      });
-
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          setState(() {
-            _isHeartVisible = false;
-          });
-        }
-      });
-    }
-  }
+  final String username;
+  final String avatarUrl;
+  final String imageUrl;
+  final String caption;
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final isLiked = currentUser != null && widget.post.likes.contains(currentUser.uid);
-
     return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300, width: 0.5),
-        ),
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildPostHeader(context),
-          if (widget.post.imageUrl != null)
-            GestureDetector(
-              onDoubleTap: _likePost,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Image.network(
-                    widget.post.imageUrl!,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 400,
-                  ),
-                  if (_isHeartVisible)
-                    FadeTransition(
-                      opacity: _animation,
-                      child: const Icon(Icons.favorite, color: Colors.white, size: 100),
-                    ),
-                ],
-              ),
-            ),
-          _buildActionButtons(context, isLiked),
-          _buildPostDetails(context),
+          _buildPostHeader(),
+          _buildPostImage(),
+          _buildPostActions(context),
+          _buildPostDetails(),
         ],
       ),
     );
   }
 
-  Widget _buildPostHeader(BuildContext context) {
+  Widget _buildPostHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       child: Row(
         children: [
-          const CircleAvatar(
-            radius: 16,
-            child: Icon(Icons.person, size: 20),
+          CircleAvatar(
+            radius: 18,
+            backgroundImage: NetworkImage(avatarUrl),
           ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(_getAuthorUsername(), style: Theme.of(context).textTheme.titleSmall),
-              if (widget.post.location != null)
-                Text(widget.post.location!, style: Theme.of(context).textTheme.bodySmall),
-            ],
+          const SizedBox(width: 10),
+          Text(
+            username,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           const Spacer(),
           IconButton(
@@ -160,19 +54,25 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, bool isLiked) {
+  Widget _buildPostImage() {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: 400,
+    );
+  }
+
+  Widget _buildPostActions(BuildContext context) {
     return Row(
       children: [
         IconButton(
-          icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border, size: 28),
-          onPressed: _likePost,
-          color: isLiked ? Colors.red : null,
+          icon: const Icon(Icons.favorite_border, size: 28),
+          onPressed: () {},
         ),
         IconButton(
           icon: const Icon(Icons.chat_bubble_outline, size: 28),
-          onPressed: () {
-            context.go('/comments/${widget.post.id}');
-          },
+          onPressed: () {},
         ),
         IconButton(
           icon: const Icon(Icons.send_outlined, size: 28),
@@ -187,40 +87,38 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildPostDetails(BuildContext context) {
+  Widget _buildPostDetails() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${widget.post.likes.length} likes', style: Theme.of(context).textTheme.titleSmall),
+          const Text(
+            '1,234 likes',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 4),
           RichText(
             text: TextSpan(
-              style: DefaultTextStyle.of(context).style,
+              style: const TextStyle(color: Colors.black),
               children: [
                 TextSpan(
-                  text: '${_getAuthorUsername()} ',
-                  style: Theme.of(context).textTheme.titleSmall,
+                  text: '$username ',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                TextSpan(
-                  text: widget.post.caption,
-                ),
+                TextSpan(text: caption),
               ],
             ),
           ),
           const SizedBox(height: 4),
-          GestureDetector(
-            onTap: () => context.go('/comments/${widget.post.id}'),
-            child: Text(
-              'View all ${widget.post.commentCount} comments',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+          const Text(
+            'View all 56 comments',
+            style: TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 4),
-          Text(
-            _formatTimestamp(widget.post.timestamp),
-            style: Theme.of(context).textTheme.bodySmall,
+          const Text(
+            '2 hours ago',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
           const SizedBox(height: 12),
         ],

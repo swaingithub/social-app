@@ -7,7 +7,13 @@ class AddPostScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Post'),
+        title: const Text('Add Post'),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.send),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -16,26 +22,17 @@ class AddPostScreen extends StatelessWidget {
             Container(
               height: 200,
               width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Icon(Icons.add_a_photo_outlined,
-                  size: 50, color: Colors.grey[600]),
+              color: Colors.grey[300],
+              child: const Icon(Icons.camera_alt, size: 50, color: Colors.grey),
             ),
             const SizedBox(height: 16),
             const TextField(
               decoration: InputDecoration(
                 hintText: 'Write a caption...',
-                border: OutlineInputBorder(),
+                border: InputBorder.none,
               ),
               maxLines: 3,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Post'),
-            )
           ],
         ),
       ),
