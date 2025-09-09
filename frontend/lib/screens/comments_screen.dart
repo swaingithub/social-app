@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/models/post.dart';
-import 'package:social_media_app/providers/comment_provider.dart';
 import 'package:social_media_app/widgets/comment_card.dart';
 
 class CommentsScreen extends StatefulWidget {
@@ -20,7 +19,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CommentProvider>(context, listen: false).fetchComments(widget.post.id);
+      // Provider.of<CommentProvider>(context, listen: false).fetchComments(widget.post.id);
     });
   }
 
@@ -32,31 +31,31 @@ class _CommentsScreenState extends State<CommentsScreen> {
       ),
       body: Column(
         children: [
-          Expanded(
-            child: Consumer<CommentProvider>(
-              builder: (context, commentProvider, child) {
-                if (commentProvider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          // Expanded(
+          //   child: Consumer<CommentProvider>(
+          //     builder: (context, commentProvider, child) {
+          //       if (commentProvider.isLoading) {
+          //         return const Center(child: CircularProgressIndicator());
+          //       }
 
-                if (commentProvider.comments.isEmpty) {
-                  return const Center(child: Text('No comments yet.'));
-                }
+          //       if (commentProvider.comments.isEmpty) {
+          //         return const Center(child: Text('No comments yet.'));
+          //       }
 
-                return ListView.builder(
-                  itemCount: commentProvider.comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = commentProvider.comments[index];
-                    return CommentCard(
-                      username: comment.author.username,
-                      avatarUrl: comment.author.profileImageUrl,
-                      comment: comment.text,
-                    );
-                  },
-                );
-              },
-            ),
-          ),
+          //       return ListView.builder(
+          //         itemCount: commentProvider.comments.length,
+          //         itemBuilder: (context, index) {
+          //           final comment = commentProvider.comments[index];
+          //           return CommentCard(
+          //             username: comment.author.username,
+          //             avatarUrl: comment.author.profileImageUrl,
+          //             comment: comment.text,
+          //           );
+          //         },
+          //       );
+          //     },
+          //   ),
+          // ),
           _buildCommentInputField(context),
         ],
       ),
@@ -65,7 +64,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   Widget _buildCommentInputField(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final commentProvider = Provider.of<CommentProvider>(context, listen: false);
+    // final commentProvider = Provider.of<CommentProvider>(context, listen: false);
     const currentUserId = 'user_0'; // Hardcoded user ID for now
 
     return Container(
@@ -97,7 +96,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
+                fillColor: Colors.black.withOpacity(0.5),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
               ),
             ),
@@ -106,7 +105,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
             icon: const Icon(Icons.send),
             onPressed: () {
               if (_commentController.text.isNotEmpty) {
-                commentProvider.addComment(widget.post.id, _commentController.text, currentUserId);
+                // commentProvider.addComment(widget.post.id, _commentController.text, currentUserId);
                 _commentController.clear();
               }
             },

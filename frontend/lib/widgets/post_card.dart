@@ -1,9 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/models/post.dart';
-import 'package:social_media_app/providers/feed_provider.dart';
+import 'package:social_media_app/providers/post_provider.dart';
 
 class PostCard extends StatefulWidget {
   const PostCard({super.key, required this.post});
@@ -57,9 +58,9 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void _toggleLike(FeedProvider feedProvider) {
+  void _toggleLike(PostProvider postProvider) {
     final isLiked = widget.post.likes.contains(currentUserId);
-    feedProvider.toggleLike(widget.post.id, currentUserId);
+    postProvider.toggleLike(widget.post.id);
     if (!isLiked) {
       _likeAnimationController.forward().then((_) => _likeAnimationController.reverse());
       _favoriteIconAnimationController.forward().then((_) => _favoriteIconAnimationController.reverse());
@@ -69,11 +70,11 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final feedProvider = Provider.of<FeedProvider>(context, listen: false);
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
     final isLiked = widget.post.likes.contains(currentUserId);
 
     return GestureDetector(
-      onDoubleTap: () => _toggleLike(feedProvider),
+      onDoubleTap: () => _toggleLike(postProvider),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         decoration: BoxDecoration(
@@ -106,7 +107,7 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
             children: [
               _buildPostHeader(context),
               _buildPostImage(context),
-              _buildPostActions(context, feedProvider, isLiked),
+              _buildPostActions(context, postProvider, isLiked),
               _buildPostDetails(context),
             ],
           ),
@@ -122,12 +123,12 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
         children: [
           CircleAvatar(
             radius: 22,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=${widget.post.author}'),
+            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=${widget.post.author.profileImageUrl}'),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              widget.post.author,
+              widget.post.author.username,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
@@ -149,7 +150,7 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Image.network(
-            widget.post.imageUrl!,
+            widget.post.imageUrl,
             fit: BoxFit.cover,
             width: double.infinity,
             height: 350,
@@ -168,7 +169,7 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildPostActions(BuildContext context, FeedProvider feedProvider, bool isLiked) {
+  Widget _buildPostActions(BuildContext context, PostProvider postProvider, bool isLiked) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
@@ -190,7 +191,7 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
                     width: 32,
                     height: 32,
                   ),
-                  onPressed: () => _toggleLike(feedProvider),
+                  onPressed: () => _toggleLike(postProvider),
                 ),
               ),
               const SizedBox(width: 8),
@@ -233,7 +234,7 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
               style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface, height: 1.4),
               children: [
                 TextSpan(
-                  text: '${widget.post.author} ',
+                  text: '${widget.post.author.username} ',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 TextSpan(text: widget.post.caption),

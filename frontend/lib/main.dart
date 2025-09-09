@@ -1,9 +1,8 @@
+
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/firebase_options.dart';
-import 'package:social_media_app/providers/comment_provider.dart';
-import 'package:social_media_app/providers/feed_provider.dart';
+import 'package:social_media_app/providers/post_provider.dart';
+import 'package:social_media_app/providers/user_provider.dart';
 import 'package:social_media_app/routing/app_router.dart';
 import 'package:social_media_app/services/api_service.dart';
 import 'package:social_media_app/theme/theme_provider.dart';
@@ -11,9 +10,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   runApp(const MyApp());
 }
 
@@ -26,8 +22,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => FeedProvider(apiService)),
-        ChangeNotifierProvider(create: (_) => CommentProvider(apiService)),
+        ChangeNotifierProvider(create: (_) => PostProvider(apiService)),
+        ChangeNotifierProvider(create: (_) => UserProvider(apiService)),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, __) {

@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:social_media_app/models/user.dart';
 
 class Comment {
@@ -6,7 +6,7 @@ class Comment {
   final String postId;
   final User author;
   final String text;
-  final Timestamp timestamp;
+  final DateTime timestamp;
 
   Comment({
     required this.id,

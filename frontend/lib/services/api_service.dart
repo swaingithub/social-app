@@ -1,111 +1,155 @@
-import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_media_app/models/comment.dart';
 import 'package:social_media_app/models/post.dart';
 import 'package:social_media_app/models/user.dart';
 
 class ApiService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final String baseUrl;
 
-  // Simulate a network delay
-  Future<void> _delay() => Future.delayed(const Duration(seconds: 2));
+  ApiService() {
+    if (Platform.isAndroid) {
+      baseUrl = 'http://10.0.2.2:5000/api';
+    } else {
+      baseUrl = 'http://localhost:5000/api';
+    }
+  }
 
-  Future<List<Post>> getFeed() async {
-    await _delay();
-    return List.generate(
-      10,
-      (index) => Post(
-        id: 'post_$index',
-        author: 'user_$index',
-        imageUrl: 'https://picsum.photos/seed/${Random().nextInt(1000)}/800/600',
-        caption: 'This is a caption for post #$index',
-        likes: List.generate(Random().nextInt(10), (i) => 'like_$i'),
-        commentCount: Random().nextInt(100),
-        timestamp: Timestamp.fromDate(
-          DateTime.now().subtract(Duration(minutes: index * 5)),
-        ),
-      ),
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  Future<void> _setToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  Future<void> register(String username, String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+      }),
     );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      await _setToken(data['token']);
+    } else {
+      throw Exception('Failed to register');
+    }
+  }
+
+  Future<void> login(String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      await _setToken(data['token']);
+    } else {
+      throw Exception('Failed to login');
+    }
+  }
+
+  Future<List<Post>> getPosts() async {
+    final response = await http.get(Uri.parse('$baseUrl/posts'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((post) => Post.fromJson(post)).toList();
+    } else {
+      throw Exception('Failed to load posts');
+    }
+  }
+
+  Future<Post> createPost(String caption, String imageUrl) async {
+    final token = await _getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/posts'),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token ?? '',
+      },
+      body: jsonEncode({
+        'caption': caption,
+        'imageUrl': imageUrl,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return Post.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to create post');
+    }
+  }
+
+  Future<void> toggleLike(String postId) async {
+    final token = await _getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/posts/$postId/like'),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token ?? '',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to toggle like');
+    }
+  }
+
+    Future<User> getUser(String userId) async {
+    final response = await http.get(Uri.parse('$baseUrl/users/$userId'));
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load user');
+    }
   }
 
   Future<List<Comment>> getComments(String postId) async {
-    await _delay();
-    return List.generate(
-      15,
-      (index) => Comment(
-        id: 'comment_$index',
-        postId: postId,
-        author: User(
-          id: 'user_$index',
-          username: 'user$index',
-          email: 'user$index@example.com',
-          bio: 'This is a bio for user$index.',
-          profileImageUrl: 'https://i.pravatar.cc/150?u=user$index',
-        ),
-        text: 'This is a comment for post #$postId, comment #$index',
-        timestamp: Timestamp.fromDate(
-          DateTime.now().subtract(Duration(minutes: index * 2)),
-        ),
-      ),
-    );
+    final response = await http.get(Uri.parse('$baseUrl/posts/$postId/comments'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((comment) => Comment.fromJson(comment)).toList();
+    } else {
+      throw Exception('Failed to load comments');
+    }
   }
 
-  Future<void> toggleLike(String postId, String userId) {
-    final postRef = _firestore.collection('posts').doc(postId);
-
-    return _firestore.runTransaction((transaction) async {
-      final postSnapshot = await transaction.get(postRef);
-
-      if (!postSnapshot.exists) {
-        throw Exception("Post does not exist!");
-      }
-
-      final List<String> likes = List<String>.from(postSnapshot.data()!['likes'] ?? []);
-
-      if (likes.contains(userId)) {
-        transaction.update(postRef, {
-          'likes': FieldValue.arrayRemove([userId])
-        });
-      } else {
-        transaction.update(postRef, {
-          'likes': FieldValue.arrayUnion([userId])
-        });
-      }
-    });
-  }
-
-  Future<User> getUser(String userId) async {
-    final userDoc = await _firestore.collection('users').doc(userId).get();
-    return User.fromMap(userDoc.data()!);
-  }
-
-  Future<Comment> addComment(String postId, String text, String userId) async {
-    final user = await getUser(userId);
-    final commentRef = _firestore.collection('posts').doc(postId).collection('comments').doc();
-
-    final newComment = Comment(
-      id: commentRef.id,
-      postId: postId,
-      author: user,
-      text: text,
-      timestamp: Timestamp.now(),
-    );
-
-    await commentRef.set({
-      'id': newComment.id,
-      'postId': newComment.postId,
-      'author': {
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'bio': user.bio,
-        'profileImageUrl': user.profileImageUrl,
+  Future<Comment> addComment(String postId, String text) async {
+    final token = await _getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/posts/$postId/comments'),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token ?? '',
       },
-      'text': newComment.text,
-      'timestamp': newComment.timestamp,
-    });
+      body: jsonEncode({
+        'text': text,
+      }),
+    );
 
-    return newComment;
+    if (response.statusCode == 200) {
+      return Comment.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to add comment');
+    }
   }
 }

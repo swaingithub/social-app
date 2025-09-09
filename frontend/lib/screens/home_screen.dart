@@ -1,35 +1,22 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:social_media_app/providers/feed_provider.dart';
+import 'package:social_media_app/providers/post_provider.dart';
 import 'package:social_media_app/widgets/post_card.dart';
 
 import '../widgets/post_placeholder.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Fetch the feed when the screen is first loaded
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<FeedProvider>(context, listen: false).fetchFeed();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Jivvi',
+          'Social Feed',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.primary,
@@ -48,12 +35,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Consumer<FeedProvider>(
-        builder: (context, feedProvider, child) {
-          if (feedProvider.isLoading) {
+      body: Consumer<PostProvider>(
+        builder: (context, postProvider, child) {
+          if (postProvider.isLoading && postProvider.posts.isEmpty) {
             return _buildPostPlaceholders(context);
           }
-          return _buildPostListView(feedProvider);
+          return RefreshIndicator(
+            onRefresh: () => postProvider.fetchPosts(),
+            child: _buildPostListView(postProvider),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -63,11 +53,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPostListView(FeedProvider feedProvider) {
+  Widget _buildPostListView(PostProvider postProvider) {
+    if (postProvider.posts.isEmpty && !postProvider.isLoading) {
+      return const Center(child: Text('No posts yet. Be the first to post!'));
+    }
     return ListView.builder(
-      itemCount: feedProvider.posts.length,
+      itemCount: postProvider.posts.length,
       itemBuilder: (context, index) {
-        final post = feedProvider.posts[index];
+        final post = postProvider.posts[index];
         return PostCard(post: post);
       },
     );

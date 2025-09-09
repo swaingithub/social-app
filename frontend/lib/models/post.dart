@@ -1,48 +1,34 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:social_media_app/models/user.dart';
 
 class Post {
   final String id;
-  final String author;
+  final User author;
   final String caption;
-  final Timestamp timestamp;
-  final String? imageUrl;
+  final String imageUrl;
   final List<String> likes;
-  final int commentCount;
-  final String? location;
+  final List<String> comments;
+  final DateTime createdAt;
 
   Post({
     required this.id,
     required this.author,
     required this.caption,
-    required this.timestamp,
-    this.imageUrl,
-    this.likes = const [],
-    this.commentCount = 0,
-    this.location,
+    required this.imageUrl,
+    required this.likes,
+    required this.comments,
+    required this.createdAt,
   });
 
-  factory Post.fromMap(Map<String, dynamic> data, String documentId) {
+  factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: documentId,
-      author: data['author'] ?? '',
-      caption: data['caption'] ?? '',
-      timestamp: data['timestamp'] ?? Timestamp.now(),
-      imageUrl: data['imageUrl'],
-      likes: List<String>.from(data['likes'] ?? []),
-      commentCount: data['commentCount'] ?? 0,
-      location: data['location'],
+      id: json['_id'] ?? '',
+      author: User.fromJson(json['author'] ?? {}),
+      caption: json['caption'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      likes: List<String>.from(json['likes'] ?? []),
+      comments: List<String>.from(json['comments'] ?? []),
+      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'author': author,
-      'caption': caption,
-      'timestamp': timestamp,
-      'imageUrl': imageUrl,
-      'likes': likes,
-      'commentCount': commentCount,
-      'location': location,
-    };
   }
 }

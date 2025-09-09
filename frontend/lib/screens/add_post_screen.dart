@@ -1,17 +1,50 @@
-import 'package:flutter/material.dart';
 
-class AddPostScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:social_media_app/providers/post_provider.dart';
+
+class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
 
   @override
+  State<AddPostScreen> createState() => _AddPostScreenState();
+}
+
+class _AddPostScreenState extends State<AddPostScreen> {
+  final _captionController = TextEditingController();
+  final _imageUrlController = TextEditingController();
+
+  @override
   Widget build(BuildContext context) {
+    final postProvider = Provider.of<PostProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Post'),
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.send),
+            onPressed: postProvider.isLoading
+                ? null
+                : () {
+                    postProvider
+                        .createPost(
+                      _captionController.text,
+                      _imageUrlController.text,
+                    )
+                        .then((_) {
+                      if (mounted) {
+                        context.pop();
+                      }
+                    });
+                  },
+            icon: postProvider.isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.send),
           ),
         ],
       ),
@@ -19,15 +52,17 @@ class AddPostScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Container(
-              height: 200,
-              width: double.infinity,
-              color: Colors.grey[300],
-              child: const Icon(Icons.camera_alt, size: 50, color: Colors.grey),
+            TextField(
+              controller: _imageUrlController,
+              decoration: const InputDecoration(
+                hintText: 'Image URL',
+                border: InputBorder.none,
+              ),
             ),
             const SizedBox(height: 16),
-            const TextField(
-              decoration: InputDecoration(
+            TextField(
+              controller: _captionController,
+              decoration: const InputDecoration(
                 hintText: 'Write a caption...',
                 border: InputBorder.none,
               ),

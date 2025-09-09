@@ -15,12 +15,12 @@ class CommentsProvider with ChangeNotifier {
   List<Comment> get comments => _comments;
 
   Future<void> fetchComments() async {
-    _isLoading = true;
-    notifyListeners();
+    // _isLoading = true;
+    // notifyListeners();
 
-    _comments = await _apiService.getComments(postId);
+    // _comments = await _apiService.getComments(postId);
 
-    _isLoading = false;
-    notifyListeners();
+    // _isLoading = false;
+    // notifyListeners();
   }
 }

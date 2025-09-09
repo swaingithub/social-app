@@ -1,13 +1,11 @@
-import 'dart:ui';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:social_media_app/providers/user_provider.dart';
 
 class LoginScreen extends StatefulWidget {
-  final FirebaseAuth? auth;
-  final bool isTest;
-  const LoginScreen({super.key, this.auth, this.isTest = false});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -15,6 +13,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final PageController _pageController = PageController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -68,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
+              controller: _emailController,
               decoration: InputDecoration(
                 hintText: 'Email',
                 filled: true,
@@ -80,6 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
+              controller: _passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 hintText: 'Password',
@@ -93,14 +98,23 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () => context.go('/'),
+              onPressed: userProvider.isLoading
+                  ? null
+                  : () {
+                      userProvider.login(
+                        _emailController.text,
+                        _passwordController.text,
+                      );
+                    },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text('Login'),
+              child: userProvider.isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Login'),
             ),
             const SizedBox(height: 16),
             TextButton(
@@ -122,6 +136,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSignupForm(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -138,6 +154,20 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(
+                hintText: 'Username',
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _emailController,
               decoration: InputDecoration(
                 hintText: 'Email',
                 filled: true,
@@ -150,6 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
+              controller: _passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 hintText: 'Password',
@@ -161,29 +192,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: 'Confirm Password',
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () => context.go('/'),
+              onPressed: userProvider.isLoading
+                  ? null
+                  : () {
+                      userProvider.register(
+                        _usernameController.text,
+                        _emailController.text,
+                        _passwordController.text,
+                      );
+                    },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text('Sign Up'),
+              child: userProvider.isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Sign Up'),
             ),
             const SizedBox(height: 16),
             TextButton(
