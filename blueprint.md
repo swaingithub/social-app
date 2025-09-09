@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the design, features, and development plan for a social media application built with Flutter and Firebase, with the goal of creating an experience similar to Instagram.
+This document outlines the design, features, and development plan for a social media application built with Flutter and Firebase. The goal is to create a unique and modern user experience with a "Claymorphic" design.
 
 ## Project Structure
 
@@ -31,13 +31,13 @@ The project is organized into the following directories:
 - `assets`: Contains the application's assets.
   - `images`: Contains the images used in the application.
 
-## Design and Style
+## Claymorphic Design
 
-The application will follow the Material Design 3 guidelines, with a modern and vibrant aesthetic inspired by Instagram.
+The application will feature a "Claymorphic" design, which is characterized by soft shadows, rounded corners, and a vibrant color palette. This design creates a friendly and tactile user experience.
 
-- **Theme:** The application has a light and dark theme, with a new color scheme and custom fonts to create a unique look and feel.
-- **Typography:** The application uses custom fonts from `google_fonts` to enhance the visual hierarchy and readability.
-- **Iconography:** The application uses a combination of Material Design icons and custom icons to create a more intuitive and engaging user experience.
+- **Color Palette:** The color palette will be based on a vibrant primary color, with a range of lighter and darker shades for depth and emphasis.
+- **Typography:** The typography will be clean and modern, with a focus on readability and visual hierarchy.
+- **Component Styling:** The UI components will have a soft, "clay-like" appearance, with rounded corners and subtle shadows to create a sense of depth.
 
 ## Features
 
@@ -56,7 +56,7 @@ The application will have the following features:
 The development of the application is divided into the following milestones:
 
 1.  **Project Setup:** Set up the project, including the folder structure, dependencies, and Firebase integration. (Completed)
-2.  **Visual Design Overhaul:** Update the theme, add custom fonts, and redesign the UI components to create a more modern and visually appealing look. (Completed)
+2.  **Visual Design Overhaul (Claymorphic):** Update the theme, add custom fonts, and redesign the UI components to create a unique and modern "Claymorphic" look and feel. (In Progress)
 3.  **Authentication:** Implement the authentication flow, including the login and sign up screens. (Completed)
 4.  **Image Posts:** Implement the ability to create posts with images, including image selection from the device and uploading to Firebase Storage. (Completed)
 5.  **Liking Posts:** Implement the ability to like and unlike posts, and update the UI to reflect the like count.

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class RootScreen extends StatelessWidget {
-  const RootScreen({super.key, required this.child});
+class ScaffoldWithBottomNavBar extends StatelessWidget {
+  const ScaffoldWithBottomNavBar({required this.child, super.key});
 
   final Widget child;
 
@@ -21,36 +21,28 @@ class RootScreen extends StatelessWidget {
             label: 'Explore',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
+            icon: Icon(Icons.add_box_outlined),
             label: 'Add',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
+            icon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
         currentIndex: _calculateSelectedIndex(context),
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) => _onItemTapped(index, context),
+        onTap: (int index) => _onItemTapped(index, context),
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location == '/') {
-      return 0;
-    }
-    if (location == '/explore') {
+    if (location.startsWith('/explore')) {
       return 1;
-    }
-    if (location == '/add-post') {
+    } else if (location.startsWith('/add-post')) {
       return 2;
-    }
-    if (location == '/profile') {
+    } else if (location.startsWith('/profile')) {
       return 3;
     }
     return 0;

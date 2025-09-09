@@ -1,72 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 
 class PostPlaceholder extends StatelessWidget {
   const PostPlaceholder({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const CircleAvatar(radius: 20),
-                const SizedBox(width: 8),
-                Container(
-                  width: 100,
-                  height: 16,
-                  color: Colors.white,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              height: 200,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 24,
-                  height: 24,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 24,
-                  height: 24,
-                  color: Colors.white,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: 150,
-              height: 16,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 4),
-            Container(
-              width: 250,
-              height: 16,
-              color: Colors.white,
-            ),
-          ],
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildPostHeader(),
+          _buildPostImage(),
+          _buildPostActions(),
+          _buildPostDetails(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.white,
+          ),
+          const SizedBox(width: 10),
+          Container(
+            width: 100,
+            height: 16,
+            color: Colors.white,
+          ),
+          const Spacer(),
+          Container(
+            width: 24,
+            height: 24,
+            color: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostImage() {
+    return Container(
+      width: double.infinity,
+      height: 400,
+      color: Colors.white,
+    );
+  }
+
+  Widget _buildPostActions() {
+    return Row(
+      children: [
+        const SizedBox(width: 12),
+        Container(
+          width: 28,
+          height: 28,
+          color: Colors.white,
         ),
+        const SizedBox(width: 12),
+        Container(
+          width: 28,
+          height: 28,
+          color: Colors.white,
+        ),
+        const SizedBox(width: 12),
+        Container(
+          width: 28,
+          height: 28,
+          color: Colors.white,
+        ),
+        const Spacer(),
+        Container(
+          width: 28,
+          height: 28,
+          color: Colors.white,
+        ),
+        const SizedBox(width: 12),
+      ],
+    );
+  }
+
+  Widget _buildPostDetails() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 100,
+            height: 16,
+            color: Colors.white,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 200,
+            height: 16,
+            color: Colors.white,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 150,
+            height: 16,
+            color: Colors.white,
+          ),
+        ],
       ),
     );
   }

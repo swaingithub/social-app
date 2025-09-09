@@ -1,12 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:social_media_app/models/post.dart';
-import 'package:social_media_app/theme/theme_provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:social_media_app/widgets/post_card.dart';
-import 'package:social_media_app/widgets/post_placeholder.dart';
 import 'package:social_media_app/widgets/stories_bar.dart';
+
+import '../widgets/post_placeholder.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,65 +12,71 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SocialApp'),
+        title: Text(
+          'Claymorphic Social',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.favorite_border),
             onPressed: () {},
+            icon: const Icon(Icons.add_circle_outline),
+            iconSize: 28,
           ),
           IconButton(
-            icon: Icon(
-                context.watch<ThemeProvider>().themeMode == ThemeMode.dark
-                    ? Icons.light_mode
-                    : Icons.dark_mode),
-            onPressed: () {
-              context.read<ThemeProvider>().toggleTheme();
+            onPressed: () {},
+            icon: const Icon(Icons.favorite_border),
+            iconSize: 28,
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.send_outlined),
+            iconSize: 28,
+          ),
+        ],
+      ),
+      body: ListView(
+        children: [
+          const StoriesBar(),
+          FutureBuilder(
+            future: Future.delayed(const Duration(seconds: 2)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return _buildPostPlaceholders(context);
+              }
+              return _buildPostListView();
             },
           ),
         ],
       ),
-      body: Column(
-        children: [
-          const StoriesBar(),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('posts')
-                  .orderBy('timestamp', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return ListView.builder(
-                    itemCount: 5,
-                    itemBuilder: (context, index) => const PostPlaceholder(),
-                  );
-                } else if (snapshot.hasError) {
-                  return const Center(child: Text('An error occurred.'));
-                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('No posts yet.'));
-                } else {
-                  final posts = snapshot.data!.docs
-                      .map((doc) => Post.fromMap(
-                          doc.data() as Map<String, dynamic>, doc.id))
-                      .toList();
-                  return ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      final post = posts[index];
-                      return PostCard(post: post);
-                    },
-                  );
-                }
-              },
-            ),
-          ),
-        ],
+    );
+  }
+
+  Widget _buildPostListView() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 10,
+      itemBuilder: (context, index) => PostCard(
+        username: 'user$index',
+        imageUrl: 'https://picsum.photos/id/${index + 10}/400/400',
+        caption: 'This is a caption for post $index',
+        avatarUrl: 'https://i.pravatar.cc/150?u=user$index',
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.go('/create-post');
-        },
-        child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildPostPlaceholders(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+      highlightColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 5,
+        itemBuilder: (context, index) => const PostPlaceholder(),
       ),
     );
   }

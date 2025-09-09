@@ -1,36 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:social_media_app/models/user.dart';
 
 class Comment {
   final String id;
-  final String author;
-  final String content;
+  final String postId;
+  final User author;
+  final String text;
   final Timestamp timestamp;
-  final List<String> likes;
 
   Comment({
     required this.id,
+    required this.postId,
     required this.author,
-    required this.content,
+    required this.text,
     required this.timestamp,
-    this.likes = const [],
   });
-
-  factory Comment.fromMap(Map<String, dynamic> data, String documentId) {
-    return Comment(
-      id: documentId,
-      author: data['author'] ?? '',
-      content: data['content'] ?? '',
-      timestamp: data['timestamp'] ?? Timestamp.now(),
-      likes: List<String>.from(data['likes'] ?? []),
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'author': author,
-      'content': content,
-      'timestamp': timestamp,
-      'likes': likes,
-    };
-  }
 }
