@@ -13,6 +13,7 @@ import 'package:social_media_app/screens/login_screen.dart';
 import 'package:social_media_app/screens/profile_screen.dart';
 import 'package:social_media_app/screens/root_screen.dart';
 import 'package:social_media_app/screens/signup_screen.dart';
+import 'package:social_media_app/screens/splash_screen.dart';
 import 'package:social_media_app/screens/stories_screen.dart';
 
 class AppRouter {
@@ -20,9 +21,13 @@ class AppRouter {
   static final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
   static final GoRouter _router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     navigatorKey: _rootNavigatorKey,
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
