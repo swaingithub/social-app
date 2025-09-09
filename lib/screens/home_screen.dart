@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:social_media_app/providers/feed_provider.dart';
 import 'package:social_media_app/widgets/post_card.dart';
-import 'package:social_media_app/widgets/stories_bar.dart';
 
 import '../widgets/post_placeholder.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch the feed when the screen is first loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<FeedProvider>(context, listen: false).fetchFeed();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +38,6 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.add_circle_outline),
-            iconSize: 28,
-          ),
-          IconButton(
-            onPressed: () {},
             icon: const Icon(Icons.favorite_border),
             iconSize: 28,
           ),
@@ -37,34 +48,28 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        children: [
-          const StoriesBar(),
-          FutureBuilder(
-            future: Future.delayed(const Duration(seconds: 2)),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return _buildPostPlaceholders(context);
-              }
-              return _buildPostListView();
-            },
-          ),
-        ],
+      body: Consumer<FeedProvider>(
+        builder: (context, feedProvider, child) {
+          if (feedProvider.isLoading) {
+            return _buildPostPlaceholders(context);
+          }
+          return _buildPostListView(feedProvider);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/add-post'),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildPostListView() {
+  Widget _buildPostListView(FeedProvider feedProvider) {
     return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 10,
-      itemBuilder: (context, index) => PostCard(
-        username: 'user$index',
-        imageUrl: 'https://picsum.photos/id/${index + 10}/400/400',
-        caption: 'This is a caption for post $index',
-        avatarUrl: 'https://i.pravatar.cc/150?u=user$index',
-      ),
+      itemCount: feedProvider.posts.length,
+      itemBuilder: (context, index) {
+        final post = feedProvider.posts[index];
+        return PostCard(post: post);
+      },
     );
   }
 
@@ -73,8 +78,6 @@ class HomeScreen extends StatelessWidget {
       baseColor: Theme.of(context).colorScheme.surface.withOpacity(0.5),
       highlightColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
       child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
         itemCount: 5,
         itemBuilder: (context, index) => const PostPlaceholder(),
       ),

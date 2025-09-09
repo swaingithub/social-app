@@ -22,4 +22,32 @@ class FeedProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  Future<void> toggleLike(String postId, String userId) async {
+    final postIndex = _posts.indexWhere((post) => post.id == postId);
+    if (postIndex == -1) return;
+
+    final post = _posts[postIndex];
+    final isLiked = post.likes.contains(userId);
+
+    if (isLiked) {
+      post.likes.remove(userId);
+    } else {
+      post.likes.add(userId);
+    }
+
+    notifyListeners();
+
+    try {
+      await _apiService.toggleLike(postId, userId);
+    } catch (e) {
+      // If the API call fails, revert the change
+      if (isLiked) {
+        post.likes.add(userId);
+      } else {
+        post.likes.remove(userId);
+      }
+      notifyListeners();
+    }
+  }
 }

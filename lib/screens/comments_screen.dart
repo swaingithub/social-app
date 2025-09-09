@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:provider/provider.dart';
+import 'package:social_media_app/models/post.dart';
+import 'package:social_media_app/providers/comment_provider.dart';
+import 'package:social_media_app/widgets/comment_card.dart';
 
-class CommentsScreen extends StatelessWidget {
-  final String postId;
+class CommentsScreen extends StatefulWidget {
+  const CommentsScreen({super.key, required this.post});
 
-  const CommentsScreen({super.key, required this.postId});
+  final Post post;
+
+  @override
+  State<CommentsScreen> createState() => _CommentsScreenState();
+}
+
+class _CommentsScreenState extends State<CommentsScreen> {
+  final _commentController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CommentProvider>(context, listen: false).fetchComments(widget.post.id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,60 +30,89 @@ class CommentsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Comments'),
       ),
-      body: Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Row(
-                      children: [
-                        const CircleAvatar(radius: 20, backgroundColor: Colors.white),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 100,
-                              height: 16,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              width: 200,
-                              height: 16,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
+      body: Column(
+        children: [
+          Expanded(
+            child: Consumer<CommentProvider>(
+              builder: (context, commentProvider, child) {
+                if (commentProvider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (commentProvider.comments.isEmpty) {
+                  return const Center(child: Text('No comments yet.'));
+                }
+
+                return ListView.builder(
+                  itemCount: commentProvider.comments.length,
+                  itemBuilder: (context, index) {
+                    final comment = commentProvider.comments[index];
+                    return CommentCard(
+                      username: comment.author.username,
+                      avatarUrl: comment.author.profileImageUrl,
+                      comment: comment.text,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          _buildCommentInputField(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentInputField(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final commentProvider = Provider.of<CommentProvider>(context, listen: false);
+    const currentUserId = 'user_0'; // Hardcoded user ID for now
+
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 18,
+            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=user_0'),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                hintText: 'Add a comment...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  const CircleAvatar(radius: 20, backgroundColor: Colors.white),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      height: 40,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: () {
+              if (_commentController.text.isNotEmpty) {
+                commentProvider.addComment(widget.post.id, _commentController.text, currentUserId);
+                _commentController.clear();
+              }
+            },
+            color: colorScheme.primary,
+          ),
+        ],
       ),
     );
   }

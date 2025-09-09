@@ -6,6 +6,8 @@ import 'package:social_media_app/models/post.dart';
 import 'package:social_media_app/models/user.dart';
 
 class ApiService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   // Simulate a network delay
   Future<void> _delay() => Future.delayed(const Duration(seconds: 2));
 
@@ -47,5 +49,63 @@ class ApiService {
         ),
       ),
     );
+  }
+
+  Future<void> toggleLike(String postId, String userId) {
+    final postRef = _firestore.collection('posts').doc(postId);
+
+    return _firestore.runTransaction((transaction) async {
+      final postSnapshot = await transaction.get(postRef);
+
+      if (!postSnapshot.exists) {
+        throw Exception("Post does not exist!");
+      }
+
+      final List<String> likes = List<String>.from(postSnapshot.data()!['likes'] ?? []);
+
+      if (likes.contains(userId)) {
+        transaction.update(postRef, {
+          'likes': FieldValue.arrayRemove([userId])
+        });
+      } else {
+        transaction.update(postRef, {
+          'likes': FieldValue.arrayUnion([userId])
+        });
+      }
+    });
+  }
+
+  Future<User> getUser(String userId) async {
+    final userDoc = await _firestore.collection('users').doc(userId).get();
+    return User.fromMap(userDoc.data()!);
+  }
+
+  Future<Comment> addComment(String postId, String text, String userId) async {
+    final user = await getUser(userId);
+    final commentRef = _firestore.collection('posts').doc(postId).collection('comments').doc();
+
+    final newComment = Comment(
+      id: commentRef.id,
+      postId: postId,
+      author: user,
+      text: text,
+      timestamp: Timestamp.now(),
+    );
+
+    await commentRef.set({
+      'id': newComment.id,
+      'postId': newComment.postId,
+      'author': {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'bio': user.bio,
+        'profileImageUrl': user.profileImageUrl,
+      },
+      'text': newComment.text,
+      'timestamp': newComment.timestamp,
+    });
+
+    return newComment;
   }
 }
