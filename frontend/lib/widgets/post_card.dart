@@ -123,7 +123,9 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
         children: [
           CircleAvatar(
             radius: 22,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=${widget.post.author.profileImageUrl}'),
+            backgroundImage: widget.post.author.profileImageUrl != null
+                ? NetworkImage(widget.post.author.profileImageUrl!)
+                : NetworkImage('https://ui-avatars.com/api/?name=${widget.post.author.username}&background=random'),
           ),
           const SizedBox(width: 16),
           Expanded(

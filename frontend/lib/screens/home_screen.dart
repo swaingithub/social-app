@@ -1,4 +1,4 @@
-
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -35,17 +35,39 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<PostProvider>(
-        builder: (context, postProvider, child) {
-          if (postProvider.isLoading && postProvider.posts.isEmpty) {
-            return _buildPostPlaceholders(context);
-          }
-          return RefreshIndicator(
-            onRefresh: () => postProvider.fetchPosts(),
-            child: _buildPostListView(postProvider),
-          );
-        },
-      ),
+      body: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 30,
+              spreadRadius: 2,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Consumer<PostProvider>(
+          builder: (context, postProvider, child) {
+            if (postProvider.isLoading && postProvider.posts.isEmpty) {
+              return _buildPostPlaceholders(context);
+            }
+            return RefreshIndicator(
+              onRefresh: () => postProvider.fetchPosts(),
+              child: _buildPostListView(postProvider),
+            );
+          },
+        ),
+      )
+          .animate()
+          .scale(
+            begin: const Offset(0.95, 0.95),
+            end: const Offset(1, 1),
+            curve: Curves.easeOutBack,
+            duration: 600.ms,
+          )
+          .fadeIn(delay: 300.ms),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/add-post'),
         child: const Icon(Icons.add),

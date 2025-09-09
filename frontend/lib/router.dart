@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:social_media_app/screens/full_screen_post_screen.dart';
 import 'package:social_media_app/screens/home_screen.dart';
 import 'package:social_media_app/screens/login_screen.dart';
+import 'package:social_media_app/screens/signup_screen.dart';
 
 final router = GoRouter(
   routes: [
@@ -13,6 +14,10 @@ final router = GoRouter(
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => const SignupScreen(),
     ),
     GoRoute(
       path: '/post',

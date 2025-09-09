@@ -1,25 +1,27 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/providers/user_provider.dart';
+import 'package:social_media_app/screens/login_screen.dart';
+import 'package:social_media_app/screens/home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -29,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = Theme.of(context);
-    final userProvider = Provider.of<UserProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -48,9 +49,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   _buildWelcomeText(theme),
                   const SizedBox(height: 40),
-                  _buildCard(theme, userProvider),
+                  Consumer<UserProvider>(
+                    builder: (context, userProvider, _) {
+                      return _buildCard(theme, userProvider);
+                    },
+                  ),
                   const SizedBox(height: 24),
-                  _buildSignupLink(theme),
+                  _buildLoginLink(theme),
                 ],
               ),
             ),
@@ -64,12 +69,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         Text(
-          'Welcome Back!',
+          'Create Account',
           style: GoogleFonts.poppins(
             color: theme.primaryColor,
             fontSize: 36,
             fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
           ),
           textAlign: TextAlign.center,
         ).animate().fadeIn(delay: 100.ms).slideY(
@@ -80,11 +84,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
         const SizedBox(height: 8),
         Text(
-          'Sign in to your account',
+          'Start your journey with us',
           style: GoogleFonts.poppins(
             color: Colors.black54,
             fontSize: 16,
-            fontWeight: FontWeight.w400,
           ),
           textAlign: TextAlign.center,
         ).animate().fadeIn(delay: 200.ms).slideY(
@@ -115,38 +118,40 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          _buildUsernameField(theme),
+          const SizedBox(height: 20),
           _buildEmailField(theme),
           const SizedBox(height: 20),
           _buildPasswordField(theme),
-          const SizedBox(height: 8),
-          _buildForgotPassword(theme),
           const SizedBox(height: 24),
-          _buildLoginButton(theme, userProvider),
-          const SizedBox(height: 20),
-          _buildDivider(),
-          const SizedBox(height: 20),
-          _buildSocialLoginButtons(),
+          _buildSignupButton(theme, userProvider),
         ],
       ),
-    )
-        .animate()
-        .scale(
+    ).animate().scale(
           begin: const Offset(0.95, 0.95),
           end: const Offset(1, 1),
           curve: Curves.easeOutBack,
           duration: 600.ms,
-        )
-        .fadeIn(delay: 300.ms);
+        ).fadeIn(delay: 300.ms);
+  }
+
+  Widget _buildUsernameField(ThemeData theme) {
+    return TextField(
+      controller: _usernameController,
+      style: GoogleFonts.poppins(fontSize: 15, color: Colors.black87),
+      decoration: _buildInputDecoration(
+        labelText: 'Username',
+        prefixIcon: Icons.person_outline,
+        theme: theme,
+      ),
+      cursorColor: theme.primaryColor,
+    );
   }
 
   Widget _buildEmailField(ThemeData theme) {
     return TextField(
       controller: _emailController,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        color: Colors.black87,
-      ),
+      style: GoogleFonts.poppins(fontSize: 15, color: Colors.black87),
       decoration: _buildInputDecoration(
         labelText: 'Email Address',
         prefixIcon: Icons.email_outlined,
@@ -160,11 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildPasswordField(ThemeData theme) {
     return TextField(
       controller: _passwordController,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        color: Colors.black87,
-      ),
+      style: GoogleFonts.poppins(fontSize: 15, color: Colors.black87),
       decoration: _buildInputDecoration(
         labelText: 'Password',
         prefixIcon: Icons.lock_outline_rounded,
@@ -172,7 +173,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ).copyWith(
         suffixIcon: IconButton(
           icon: Icon(
-            _isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            _isPasswordVisible
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
             size: 20,
             color: Colors.black54,
           ),
@@ -196,10 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return InputDecoration(
       labelText: labelText,
       labelStyle: const TextStyle(color: Colors.black54),
-      prefixIcon: Icon(
-        prefixIcon,
-        color: Colors.black54,
-      ),
+      prefixIcon: Icon(prefixIcon, color: Colors.black54),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -214,42 +214,47 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       filled: true,
       fillColor: Colors.grey.shade50,
-      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
     );
   }
 
-  Widget _buildForgotPassword(ThemeData theme) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: () {
-          // Handle forgot password
-        },
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        child: Text(
-          'Forgot Password?',
-          style: GoogleFonts.poppins(
-            color: theme.primaryColor,
-            fontWeight: FontWeight.w500,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoginButton(ThemeData theme, UserProvider userProvider) {
+  Widget _buildSignupButton(ThemeData theme, UserProvider userProvider) {
     return ElevatedButton(
       onPressed: userProvider.isLoading
           ? null
-          : () {
-              userProvider.login(
-                _emailController.text,
-                _passwordController.text,
-              );
+          : () async {
+              if (_usernameController.text.isEmpty ||
+                  _emailController.text.isEmpty ||
+                  _passwordController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please fill in all fields')),
+                );
+                return;
+              }
+
+              try {
+                await userProvider.register(
+                  _usernameController.text.trim(),
+                  _emailController.text.trim(),
+                  _passwordController.text,
+                );
+                
+                if (context.mounted) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
       style: ElevatedButton.styleFrom(
         backgroundColor: theme.primaryColor,
@@ -261,123 +266,45 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 5,
         shadowColor: theme.primaryColor.withOpacity(0.4),
       ),
-      child: userProvider.isLoading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          : Text(
-              'Sign In',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
-            ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Row(
-      children: [
-        Expanded(
-          child: Divider(
-            color: Colors.grey.shade300,
-            thickness: 1,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'OR',
-            style: GoogleFonts.poppins(
-              color: Colors.grey.shade500,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Divider(
-            color: Colors.grey.shade300,
-            thickness: 1,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialLoginButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildSocialButton(
-          icon: Icons.g_mobiledata,
-          color: Colors.red.shade500,
-          onPressed: () {},
-        ),
-        const SizedBox(width: 20),
-        _buildSocialButton(
-          icon: Icons.facebook_rounded,
-          color: Colors.blue.shade700,
-          onPressed: () {},
-        ),
-        const SizedBox(width: 20),
-        _buildSocialButton(
-          icon: Icons.apple_rounded,
-          color: Colors.black,
-          onPressed: () {},
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade300,
-            width: 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          size: 28,
-          color: color,
-        ),
+      child: Consumer<UserProvider>(
+        builder: (context, userProvider, _) {
+          return userProvider.isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Text(
+                  'Sign Up',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+        },
       ),
     );
   }
 
-  Widget _buildSignupLink(ThemeData theme) {
+  Widget _buildLoginLink(ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
-          "Don't have an account? ",
+          "Already have an account? ",
           style: TextStyle(color: Colors.black54),
         ),
         TextButton(
           onPressed: () {
-            GoRouter.of(context).go('/register');
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
           },
           child: Text(
-            'Sign Up',
+            'Sign In',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: theme.primaryColor,
