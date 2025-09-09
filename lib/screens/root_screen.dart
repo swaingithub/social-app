@@ -13,19 +13,23 @@ class RootScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.article_outlined),
+            activeIcon: Icon(Icons.article),
+            label: 'Stories',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore),
             label: 'Explore',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: 'Add',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
@@ -44,10 +48,10 @@ class RootScreen extends StatelessWidget {
     if (location == '/') {
       return 0;
     }
-    if (location == '/explore') {
+    if (location == '/stories') {
       return 1;
     }
-    if (location == '/add-post') {
+    if (location == '/explore') {
       return 2;
     }
     if (location == '/profile') {
@@ -62,10 +66,10 @@ class RootScreen extends StatelessWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/explore');
+        context.go('/stories');
         break;
       case 2:
-        context.go('/add-post');
+        context.go('/explore');
         break;
       case 3:
         context.go('/profile');

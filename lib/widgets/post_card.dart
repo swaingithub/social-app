@@ -1,31 +1,108 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:social_media_app/models/post.dart';
+import 'package:social_media_app/providers/feed_provider.dart';
 
-class PostCard extends StatelessWidget {
-  const PostCard({
-    super.key,
-    required this.username,
-    required this.avatarUrl,
-    required this.imageUrl,
-    required this.caption,
-  });
+class PostCard extends StatefulWidget {
+  const PostCard({super.key, required this.post});
 
-  final String username;
-  final String avatarUrl;
-  final String imageUrl;
-  final String caption;
+  final Post post;
+
+  @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
+  late AnimationController _likeAnimationController;
+  late Animation<double> _likeAnimation;
+
+  late AnimationController _favoriteIconAnimationController;
+  late Animation<double> _favoriteIconAnimation;
+
+  final String currentUserId = 'user_0'; // Hardcoded user ID for now
+
+  @override
+  void initState() {
+    super.initState();
+    _likeAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _likeAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(
+        parent: _likeAnimationController,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _favoriteIconAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _favoriteIconAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _favoriteIconAnimationController,
+        curve: Curves.elasticOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _likeAnimationController.dispose();
+    _favoriteIconAnimationController.dispose();
+    super.dispose();
+  }
+
+  void _toggleLike(FeedProvider feedProvider) {
+    final isLiked = widget.post.likes.contains(currentUserId);
+    feedProvider.toggleLike(widget.post.id, currentUserId);
+    if (!isLiked) {
+      _likeAnimationController.forward().then((_) => _likeAnimationController.reverse());
+      _favoriteIconAnimationController.forward().then((_) => _favoriteIconAnimationController.reverse());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildPostHeader(context),
-          _buildPostImage(context),
-          _buildPostActions(context),
-          _buildPostDetails(context),
-        ],
+    final colorScheme = Theme.of(context).colorScheme;
+    final feedProvider = Provider.of<FeedProvider>(context, listen: false);
+    final isLiked = widget.post.likes.contains(currentUserId);
+
+    return GestureDetector(
+      onDoubleTap: () => _toggleLike(feedProvider),
+      child: Container(
+        margin: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24.0),
+          color: colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.7),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildPostHeader(context),
+              _buildPostImage(context),
+              _buildPostActions(context, feedProvider, isLiked),
+              _buildPostDetails(context),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -37,14 +114,16 @@ class PostCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: NetworkImage(avatarUrl),
+            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=${widget.post.author}'),
           ),
           const SizedBox(width: 12),
-          Text(
-            username,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          Expanded(
+            child: Text(
+              widget.post.author,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          const Spacer(),
           IconButton(
             icon: const Icon(Icons.more_horiz),
             onPressed: () {},
@@ -56,38 +135,58 @@ class PostCard extends StatelessWidget {
   }
 
   Widget _buildPostImage(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(0), bottom: Radius.circular(0)),
-      child: Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: 400,
-      ),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Image.network(
+          widget.post.imageUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: 300,
+        ),
+        ScaleTransition(
+          scale: _favoriteIconAnimation,
+          child: const Icon(
+            Icons.favorite,
+            color: Colors.white,
+            size: 100,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildPostActions(BuildContext context) {
+  Widget _buildPostActions(BuildContext context, FeedProvider feedProvider, bool isLiked) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border, size: 28),
-            onPressed: () {},
-            color: Theme.of(context).iconTheme.color,
+          Row(
+            children: [
+              ScaleTransition(
+                scale: _likeAnimation,
+                child: IconButton(
+                  icon: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: isLiked ? Colors.red : Theme.of(context).iconTheme.color,
+                    size: 28,
+                  ),
+                  onPressed: () => _toggleLike(feedProvider),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chat_bubble_outline, size: 28),
+                onPressed: () => context.push('/comments', extra: widget.post),
+                color: Theme.of(context).iconTheme.color,
+              ),
+              IconButton(
+                icon: const Icon(Icons.send_outlined, size: 28),
+                onPressed: () {},
+                color: Theme.of(context).iconTheme.color,
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline, size: 28),
-            onPressed: () {},
-            color: Theme.of(context).iconTheme.color,
-          ),
-          IconButton(
-            icon: const Icon(Icons.send_outlined, size: 28),
-            onPressed: () {},
-            color: Theme.of(context).iconTheme.color,
-          ),
-          const Spacer(),
           IconButton(
             icon: const Icon(Icons.bookmark_border, size: 28),
             onPressed: () {},
@@ -103,12 +202,12 @@ class PostCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '1,234 likes',
+            '${widget.post.likes.length} likes',
             style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
@@ -117,24 +216,13 @@ class PostCard extends StatelessWidget {
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               children: [
                 TextSpan(
-                  text: '$username ',
+                  text: '${widget.post.author} ',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                TextSpan(text: caption),
+                TextSpan(text: widget.post.caption),
               ],
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'View all 56 comments',
-            style: textTheme.bodySmall?.copyWith(color: Colors.grey),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '2 hours ago',
-            style: textTheme.bodySmall?.copyWith(color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 12),
         ],
       ),
     );

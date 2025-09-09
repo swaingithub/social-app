@@ -12,4 +12,14 @@ class User {
     required this.bio,
     required this.profileImageUrl,
   });
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
+      id: map['id'] ?? '',
+      username: map['username'] ?? '',
+      email: map['email'] ?? '',
+      bio: map['bio'] ?? '',
+      profileImageUrl: map['profileImageUrl'] ?? '',
+    );
+  }
 }

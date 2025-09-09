@@ -1,65 +1,53 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/models/comment.dart';
 
 class CommentCard extends StatelessWidget {
-  final Comment comment;
-  const CommentCard({super.key, required this.comment});
+  const CommentCard({
+    super.key,
+    required this.username,
+    required this.avatarUrl,
+    required this.comment,
+  });
 
-  String _formatTimestamp(Timestamp timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp.toDate());
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m';
-    } else {
-      return 'Just now';
-    }
-  }
+  final String username;
+  final String avatarUrl;
+  final String comment;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.0),
+        color: colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 16,
-            backgroundImage: NetworkImage(comment.author.profileImageUrl),
+            radius: 20,
+            backgroundImage: NetworkImage(avatarUrl),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    style: DefaultTextStyle.of(context).style,
-                    children: [
-                      TextSpan(
-                        text: '${comment.author.username} ',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      TextSpan(
-                        text: comment.text,
-                      ),
-                    ],
-                  ),
+                Text(
+                  username,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      _formatTimestamp(comment.timestamp),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+                Text(comment, style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/firebase_options.dart';
+import 'package:social_media_app/providers/comment_provider.dart';
 import 'package:social_media_app/providers/feed_provider.dart';
 import 'package:social_media_app/routing/app_router.dart';
 import 'package:social_media_app/services/api_service.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => FeedProvider(apiService)),
+        ChangeNotifierProvider(create: (_) => CommentProvider(apiService)),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, __) {

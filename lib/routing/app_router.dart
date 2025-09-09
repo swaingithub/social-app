@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:social_media_app/models/post.dart';
 import 'package:social_media_app/screens/add_post_screen.dart';
 import 'package:social_media_app/screens/comments_screen.dart';
 import 'package:social_media_app/screens/explore_screen.dart';
+import 'package:social_media_app/screens/full_screen_post_screen.dart';
 import 'package:social_media_app/screens/home_screen.dart';
 import 'package:social_media_app/screens/login_screen.dart';
 import 'package:social_media_app/screens/profile_screen.dart';
 import 'package:social_media_app/screens/root_screen.dart';
+import 'package:social_media_app/screens/stories_screen.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -31,12 +34,12 @@ class AppRouter {
             builder: (context, state) => const HomeScreen(),
           ),
           GoRoute(
-            path: '/explore',
-            builder: (context, state) => const ExploreScreen(),
+            path: '/stories',
+            builder: (context, state) => const StoriesScreen(),
           ),
           GoRoute(
-            path: '/add-post',
-            builder: (context, state) => const AddPostScreen(),
+            path: '/explore',
+            builder: (context, state) => const ExploreScreen(),
           ),
           GoRoute(
             path: '/profile',
@@ -45,10 +48,26 @@ class AppRouter {
           GoRoute(
             path: '/comments',
             builder: (context, state) => CommentsScreen(
-              postId: state.extra as String,
+              post: state.extra as Post,
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/post',
+        builder: (context, state) {
+          final post = state.extra as Map<String, String>;
+          return FullScreenPostScreen(
+            username: post['username']!,
+            avatarUrl: post['avatarUrl']!,
+            imageUrl: post['imageUrl']!,
+            caption: post['caption']!,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/add-post',
+        builder: (context, state) => const AddPostScreen(),
       ),
     ],
   );
