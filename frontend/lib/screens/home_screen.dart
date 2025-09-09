@@ -68,6 +68,52 @@ class HomeScreen extends StatelessWidget {
             duration: 600.ms,
           )
           .fadeIn(delay: 300.ms),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).primaryColor.withOpacity(0.3),
+              blurRadius: 12,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => context.push('/add-post'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).primaryColor,
+                  Theme.of(context).primaryColor.withOpacity(0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: const Icon(
+              Icons.add_rounded,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+        ),
+      ).animate(
+        delay: 1.seconds,
+        onPlay: (controller) => controller.repeat(reverse: true),
+      ).scale(
+        begin: const Offset(0.9, 0.9),
+        end: const Offset(1.0, 1.0),
+        duration: 1.5.seconds,
+        curve: Curves.easeInOut,
+      ),
     );
   }
 
