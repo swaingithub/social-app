@@ -68,10 +68,6 @@ class HomeScreen extends StatelessWidget {
             duration: 600.ms,
           )
           .fadeIn(delay: 300.ms),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/add-post'),
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
