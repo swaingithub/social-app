@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/providers/post_provider.dart';
-import 'package:dotted_border/dotted_border.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -54,36 +53,30 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   // Image Input
                   AspectRatio(
                     aspectRatio: 1, // Square aspect ratio
-                    child: DottedBorder(
-                      borderType: BorderType.RRect,
-                      radius: const Radius.circular(16),
-                      color: theme.dividerColor,
-                      strokeWidth: 2,
-                      dashPattern: const [8, 8],
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          image: _imageUrlController.text.isNotEmpty && Uri.parse(_imageUrlController.text).isAbsolute
-                              ? DecorationImage(
-                                  image: NetworkImage(_imageUrlController.text),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                        child: _imageUrlController.text.isEmpty || !Uri.parse(_imageUrlController.text).isAbsolute
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.photo_library_outlined, size: 60, color: theme.dividerColor),
-                                    const SizedBox(height: 16),
-                                    Text('Tap to add a photo', style: theme.textTheme.bodyLarge),
-                                  ],
-                                ),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: theme.dividerColor, width: 1.5),
+                        image: _imageUrlController.text.isNotEmpty && Uri.parse(_imageUrlController.text).isAbsolute
+                            ? DecorationImage(
+                                image: NetworkImage(_imageUrlController.text),
+                                fit: BoxFit.cover,
                               )
                             : null,
                       ),
+                      child: _imageUrlController.text.isEmpty || !Uri.parse(_imageUrlController.text).isAbsolute
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.photo_library_outlined, size: 60, color: theme.dividerColor),
+                                  const SizedBox(height: 16),
+                                  Text('Tap to add a photo', style: theme.textTheme.bodyLarge),
+                                ],
+                              ),
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 16),
