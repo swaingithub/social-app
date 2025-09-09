@@ -18,128 +18,114 @@ class _AddPostScreenState extends State<AddPostScreen> {
   @override
   Widget build(BuildContext context) {
     final postProvider = Provider.of<PostProvider>(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.black,
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with back button and Post button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                      onPressed: () => context.pop(),
-                    ),
-                    TextButton(
-                      onPressed: postProvider.isLoading
-                          ? null
-                          : () {
-                              postProvider
-                                  .createPost(
-                                _captionController.text,
-                                _imageUrlController.text,
-                              )
-                                  .then((_) {
-                                if (mounted) {
-                                  context.go('/');
-                                }
-                              });
-                            },
-                      child: postProvider.isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Text(
-                              'Post',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-              // Image URL input and preview
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 250,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade800),
-                        image: _imageUrlController.text.isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(_imageUrlController.text),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: _imageUrlController.text.isEmpty
-                          ? Center(
-                              child: Icon(Icons.image_outlined, color: Colors.grey.shade700, size: 60),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _imageUrlController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Enter Image URL...',
-                        hintStyle: TextStyle(color: Colors.grey.shade500),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade800),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade800),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.white),
-                        ),
-                      ),
-                      onChanged: (value) => setState(() {}),
-                    ),
-                  ],
-                ),
-              ),
-              // Caption input
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: TextField(
-                  controller: _captionController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Write a caption...',
-                    hintStyle: TextStyle(color: Colors.grey.shade500),
-                    border: InputBorder.none,
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 30),
+                    onPressed: () => context.pop(),
+                    tooltip: 'Cancel',
                   ),
-                  maxLines: 3,
+                  Text(
+                    'New Post',
+                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    onPressed: postProvider.isLoading
+                        ? null
+                        : () {
+                            postProvider
+                                .createPost(
+                              _captionController.text,
+                              _imageUrlController.text,
+                            )
+                                .then((_) {
+                              if (mounted) {
+                                context.go('/');
+                              }
+                            });
+                          },
+                    child: postProvider.isLoading
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Text(
+                            'Share',
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Image Preview & Input
+              AspectRatio(
+                aspectRatio: 1, // Square aspect ratio
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: theme.dividerColor, width: 1.5),
+                    image: _imageUrlController.text.isNotEmpty && Uri.parse(_imageUrlController.text).isAbsolute
+                        ? DecorationImage(
+                            image: NetworkImage(_imageUrlController.text),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: _imageUrlController.text.isEmpty || !Uri.parse(_imageUrlController.text).isAbsolute
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.photo_library_outlined, size: 60, color: theme.dividerColor),
+                              const SizedBox(height: 16),
+                              Text('Your image will appear here', style: theme.textTheme.bodyLarge),
+                            ],
+                          ),
+                        )
+                      : null,
                 ),
               ),
               const SizedBox(height: 16),
-              // Additional options
-              Divider(color: Colors.grey.shade800, height: 1),
-              _buildOptionRow(Icons.person_add_alt_1_outlined, 'Tag people'),
-              Divider(color: Colors.grey.shade800, height: 1),
-              _buildOptionRow(Icons.music_note_outlined, 'Add music'),
-              Divider(color: Colors.grey.shade800, height: 1),
-              _buildOptionRow(Icons.location_on_outlined, 'Add location'),
-              Divider(color: Colors.grey.shade800, height: 1),
+              TextField(
+                controller: _imageUrlController,
+                decoration: const InputDecoration(hintText: 'Image URL'),
+                onChanged: (value) => setState(() {}),
+              ),
+              const SizedBox(height: 24),
+
+              // Caption
+              TextField(
+                controller: _captionController,
+                decoration: const InputDecoration(
+                  hintText: 'Write a caption...',
+                  border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                ),
+                maxLines: 4,
+              ),
+              const SizedBox(height: 24),
+
+              // Action Buttons
+              _buildOptionButton(context, icon: Icons.person_add_outlined, label: 'Tag People'),
+              const SizedBox(height: 12),
+              _buildOptionButton(context, icon: Icons.music_note_outlined, label: 'Add Music'),
+              const SizedBox(height: 12),
+              _buildOptionButton(context, icon: Icons.location_on_outlined, label: 'Add Location'),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -147,20 +133,26 @@ class _AddPostScreenState extends State<AddPostScreen> {
     );
   }
 
-  Widget _buildOptionRow(IconData icon, String title) {
+  Widget _buildOptionButton(BuildContext context, {required IconData icon, required String label}) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () {
-        // TODO: Implement option functionality
+        // TODO: Implement button functionality
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor, width: 1),
+        ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 24),
+            Icon(icon, size: 24),
             const SizedBox(width: 16),
-            Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+            Text(label, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
             const Spacer(),
-            Icon(Icons.chevron_right, color: Colors.grey.shade600, size: 24),
+            Icon(Icons.chevron_right, color: theme.dividerColor),
           ],
         ),
       ),
