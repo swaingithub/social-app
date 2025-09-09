@@ -1,5 +1,6 @@
 
 const User = require('../models/user');
+const Relationship = require('../models/relationship');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -92,4 +93,60 @@ exports.getUserById = async (req, res) => {
         console.error(err.message);
         res.status(500).send('Server error');
     }
+};
+
+exports.followUser = async (req, res) => {
+  try {
+    const followerId = req.user.id;
+    const followingId = req.params.id;
+
+    if (followerId === followingId) {
+      return res.status(400).json({ msg: 'You cannot follow yourself' });
+    }
+
+    const relationship = await Relationship.create({ followerId, followingId });
+
+    res.json(relationship);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.unfollowUser = async (req, res) => {
+  try {
+    const followerId = req.user.id;
+    const followingId = req.params.id;
+
+    const result = await Relationship.destroy({
+      where: { followerId, followingId },
+    });
+
+    if (result === 0) {
+      return res.status(400).json({ msg: 'You are not following this user' });
+    }
+
+    res.json({ msg: 'User unfollowed' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.updateUserSettings = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    user.settings = req.body.settings;
+    await user.save();
+
+    res.json(user.settings);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
 };
