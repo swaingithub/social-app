@@ -11,9 +11,15 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Connect to MySQL
+// Connect to MySQL and sync models
 sequelize.authenticate()
-  .then(() => console.log('MySQL Connected...'))
+  .then(() => {
+    console.log('MySQL Connected...');
+    // Sync models with the database
+    sequelize.sync({ alter: true })
+      .then(() => console.log('Sequelize models synced with database.'))
+      .catch(err => console.log('Error syncing models: ' + err));
+  })
   .catch(err => console.log('Error: ' + err));
 
 // Init Middleware
