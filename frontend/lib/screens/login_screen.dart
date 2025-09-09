@@ -389,7 +389,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         TextButton(
           onPressed: () {
-            GoRouter.of(context).go('/register');
+            GoRouter.of(context).go('/signup');
           },
           child: Text(
             'Sign Up',
