@@ -12,19 +12,14 @@ class ScaffoldWithNavBar extends StatefulWidget {
 class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
   int _currentIndex = 0;
 
-  static const List<String> _paths = ['/', '/profile'];
+  static const List<String> _paths = ['/', '/create-post', '/profile'];
 
   void _onTap(int index) {
-    if (index == 1) { // Index 1 is the create post button
-      context.go('/create-post');
-    } else {
-      final newIndex = index > 1 ? index -1 : index;
-       if (_currentIndex != newIndex) {
-        setState(() {
-          _currentIndex = newIndex;
-        });
-        context.go(_paths[newIndex]);
-      }
+    if (_currentIndex != index) {
+      setState(() {
+        _currentIndex = index;
+      });
+      context.go(_paths[index]);
     }
   }
 
@@ -32,11 +27,6 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/create-post'),
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTap,
@@ -45,7 +35,7 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
             icon: Icon(Icons.home),
             label: 'Home',
           ),
-           BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: Icon(Icons.add),
             label: 'Post',
           ),
