@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:jivvi/models/article.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class NewsService {
   late final String baseUrl;
@@ -24,10 +25,22 @@ class NewsService {
 
     final response = await http.get(uri);
 
+    // Print the response to the debug console
+    if (kDebugMode) {
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    }
+
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final articles = data['articles'] as List;
-      return articles.map((article) => Article.fromJson(article)).toList();
+      try {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((article) => Article.fromJson(article)).toList();
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error decoding news: $e');
+        }
+        throw Exception('Failed to parse news data');
+      }
     } else {
       throw Exception('Failed to load news');
     }
