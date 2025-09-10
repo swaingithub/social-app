@@ -15,7 +15,7 @@ class TrendingMusicScreen extends StatefulWidget {
 class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final TextEditingController _searchController = TextEditingController();
-  List<dynamic> _searchResults = [];
+  List<dynamic> _tracks = [];
   String? _currentlyPlaying;
   bool _isLoading = false;
   Timer? _debounce;
@@ -23,6 +23,7 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchTrendingMusic();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -40,11 +41,36 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
       if (_searchController.text.isNotEmpty) {
         _searchMusic(_searchController.text);
       } else {
-        setState(() {
-          _searchResults = [];
-        });
+        _fetchTrendingMusic();
       }
     });
+  }
+
+  Future<void> _fetchTrendingMusic() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.get(Uri.parse('http://localhost:5000/api/spotify/trending'));
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _tracks = jsonDecode(response.body);
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        print('Failed to load trending music');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error fetching trending music: $e');
+    }
   }
 
   Future<void> _searchMusic(String query) async {
@@ -57,14 +83,13 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
 
       if (response.statusCode == 200) {
         setState(() {
-          _searchResults = jsonDecode(response.body);
+          _tracks = jsonDecode(response.body);
           _isLoading = false;
         });
       } else {
         setState(() {
           _isLoading = false;
         });
-        // Handle error
         print('Failed to load music');
       }
     } catch (e) {
@@ -79,7 +104,7 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search Music'),
+        title: const Text('Music'),
       ),
       body: Column(
         children: [
@@ -93,9 +118,7 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
-                    setState(() {
-                      _searchResults = [];
-                    });
+                    _fetchTrendingMusic();
                   },
                 ),
               ),
@@ -105,9 +128,9 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
               ? const Center(child: CircularProgressIndicator())
               : Expanded(
                   child: ListView.builder(
-                    itemCount: _searchResults.length,
+                    itemCount: _tracks.length,
                     itemBuilder: (context, index) {
-                      final track = _searchResults[index];
+                      final track = _tracks[index];
                       final isPlaying = _currentlyPlaying == track['previewUrl'];
 
                       return ListTile(

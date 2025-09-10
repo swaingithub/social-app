@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
@@ -42,12 +43,12 @@ router.get('/search', async (req, res) => {
             params: {
                 q,
                 type: 'track',
-                limit: 50 // Increased limit to get more results
+                limit: 50
             }
         });
 
         const tracks = response.data.tracks.items
-            .filter(track => track.preview_url) // Filter out tracks without a preview URL
+            .filter(track => track.preview_url)
             .map(track => ({
                 id: track.id,
                 title: track.name,
@@ -60,6 +61,38 @@ router.get('/search', async (req, res) => {
     } catch (error) {
         console.error('Error searching Spotify:', error.response ? error.response.data : error.message);
         res.status(500).json({ message: 'Failed to search for music on Spotify' });
+    }
+});
+
+router.get('/trending', async (req, res) => {
+    try {
+        const token = await getSpotifyToken();
+        const playlistId = '37i9dQZF1DXcBWIGoYBM5M'; // Today's Top Hits playlist ID
+
+        const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            params: {
+                limit: 100
+            }
+        });
+
+        const tracks = response.data.items
+            .map(item => item.track)
+            .filter(track => track && track.preview_url)
+            .map(track => ({
+                id: track.id,
+                title: track.name,
+                artist: track.artists.map(artist => artist.name).join(', '),
+                albumArt: track.album.images.length > 0 ? track.album.images[0].url : '',
+                previewUrl: track.preview_url
+            }));
+
+        res.json(tracks);
+    } catch (error) {
+        console.error('Error fetching trending music from Spotify:', error.response ? error.response.data : error.message);
+        res.status(500).json({ message: 'Failed to fetch trending music from Spotify' });
     }
 });
 
