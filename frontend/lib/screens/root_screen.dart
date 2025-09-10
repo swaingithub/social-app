@@ -46,6 +46,11 @@ class RootScreen extends StatelessWidget {
             activeIcon: SvgPicture.asset('assets/icons/profile.svg', colorFilter: activeColorFilter),
             label: 'Profile',
           ),
+          BottomNavigationBarItem(
+            icon: SvgPicture.asset('assets/icons/explore.svg', colorFilter: inactiveColorFilter),
+            activeIcon: SvgPicture.asset('assets/icons/explore.svg', colorFilter: activeColorFilter),
+            label: 'News',
+          ),
         ],
         currentIndex: _calculateSelectedIndex(context),
         selectedItemColor: Theme.of(context).colorScheme.primary,
@@ -71,6 +76,9 @@ class RootScreen extends StatelessWidget {
     if (location == '/profile') {
       return 3;
     }
+    if (location == '/news') {
+      return 4;
+    }
     return 0;
   }
 
@@ -87,6 +95,9 @@ class RootScreen extends StatelessWidget {
         break;
       case 3:
         context.go('/profile');
+        break;
+      case 4:
+        context.go('/news');
         break;
     }
   }

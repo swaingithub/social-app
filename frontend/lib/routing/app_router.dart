@@ -11,6 +11,7 @@ import 'package:jivvi/screens/edit_profile_screen.dart';
 import 'package:jivvi/screens/explore_screen.dart';
 import 'package:jivvi/screens/home_screen.dart';
 import 'package:jivvi/screens/login_screen.dart';
+import 'package:jivvi/screens/news_screen.dart';
 import 'package:jivvi/screens/profile_screen.dart';
 import 'package:jivvi/screens/root_screen.dart';
 import 'package:jivvi/screens/signup_screen.dart';
@@ -76,6 +77,10 @@ class AppRouter {
         builder: (context, state) => EditProfileScreen(
           user: state.extra as User,
         ),
+      ),
+      GoRoute(
+        path: '/news',
+        builder: (context, state) => const NewsScreen(),
       ),
     ],
     redirect: (context, state) async {
