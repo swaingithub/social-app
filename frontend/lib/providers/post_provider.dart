@@ -28,9 +28,9 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  Future<void> createPost(String caption, String imageUrl) async {
+  Future<void> createPost(String caption, String imageUrl, List<String> taggedUsers) async {
     try {
-      final newPost = await apiService.createPost(caption, imageUrl);
+      final newPost = await apiService.createPost(caption, imageUrl, taggedUsers);
       _posts.insert(0, newPost);
       notifyListeners();
     } catch (e) {

@@ -101,7 +101,7 @@ class ApiService {
     }
   }
 
-  Future<Post> createPost(String caption, String imageUrl) async {
+  Future<Post> createPost(String caption, String imageUrl, List<String> taggedUsers) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('$baseUrl/posts'),
@@ -112,6 +112,7 @@ class ApiService {
       body: jsonEncode({
         'caption': caption,
         'imageUrl': imageUrl,
+        'taggedUsers': taggedUsers,
       }),
     );
 

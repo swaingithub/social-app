@@ -8,6 +8,7 @@ class Post {
   final String imageUrl;
   final List<String> likes;
   final List<String> comments;
+  final List<String> taggedUsers;
   final DateTime createdAt;
 
   Post({
@@ -17,6 +18,7 @@ class Post {
     required this.imageUrl,
     required this.likes,
     required this.comments,
+    required this.taggedUsers,
     required this.createdAt,
   });
 
@@ -28,6 +30,7 @@ class Post {
       imageUrl: json['imageUrl'] ?? '',
       likes: List<String>.from(json['likes'] ?? []),
       comments: List<String>.from(json['comments'] ?? []),
+      taggedUsers: List<String>.from(json['taggedUsers'] ?? []),
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
     );
   }

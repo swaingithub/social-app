@@ -1,6 +1,9 @@
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/providers/post_provider.dart';
 
@@ -13,7 +16,18 @@ class AddPostScreen extends StatefulWidget {
 
 class _AddPostScreenState extends State<AddPostScreen> {
   final _captionController = TextEditingController();
-  final _imageUrlController = TextEditingController();
+  final _taggedUsersController = TextEditingController();
+  File? _image;
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,37 +67,34 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   // Image Input
                   AspectRatio(
                     aspectRatio: 1, // Square aspect ratio
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: theme.dividerColor, width: 1.5),
-                        image: _imageUrlController.text.isNotEmpty && Uri.parse(_imageUrlController.text).isAbsolute
-                            ? DecorationImage(
-                                image: NetworkImage(_imageUrlController.text),
-                                fit: BoxFit.cover,
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: theme.dividerColor, width: 1.5),
+                          image: _image != null
+                              ? DecorationImage(
+                                  image: FileImage(_image!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: _image == null
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.photo_library_outlined, size: 60, color: theme.dividerColor),
+                                    const SizedBox(height: 16),
+                                    Text('Tap to add a photo', style: theme.textTheme.bodyLarge),
+                                  ],
+                                ),
                               )
                             : null,
                       ),
-                      child: _imageUrlController.text.isEmpty || !Uri.parse(_imageUrlController.text).isAbsolute
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.photo_library_outlined, size: 60, color: theme.dividerColor),
-                                  const SizedBox(height: 16),
-                                  Text('Tap to add a photo', style: theme.textTheme.bodyLarge),
-                                ],
-                              ),
-                            )
-                          : null,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _imageUrlController,
-                    decoration: const InputDecoration(hintText: 'Image URL'),
-                    onChanged: (value) => setState(() {}),
                   ),
                   const SizedBox(height: 24),
 
@@ -101,6 +112,19 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   ),
                   const SizedBox(height: 24),
 
+                  // Tagged Users
+                  TextField(
+                    controller: _taggedUsersController,
+                    decoration: InputDecoration(
+                      hintText: 'Tag people (comma separated)',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: theme.dividerColor, width: 1),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
                   // Additional Actions
                   Container(
                     decoration: BoxDecoration(
@@ -109,8 +133,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     ),
                     child: Column(
                       children: [
-                        _buildOptionRow(context, icon: Icons.person_add_outlined, label: 'Tag People', isFirst: true),
-                        Divider(height: 1, color: theme.dividerColor),
                         _buildOptionRow(context, icon: Icons.music_note_outlined, label: 'Add Music'),
                         Divider(height: 1, color: theme.dividerColor),
                         _buildOptionRow(context, icon: Icons.location_on_outlined, label: 'Add Location', isLast: true),
@@ -126,13 +148,15 @@ class _AddPostScreenState extends State<AddPostScreen> {
               left: 16,
               right: 16,
               child: ElevatedButton(
-                onPressed: postProvider.isLoading
+                onPressed: postProvider.isLoading || _image == null
                     ? null
                     : () {
+                        final taggedUsers = _taggedUsersController.text.split(',').map((e) => e.trim()).toList();
                         postProvider
                             .createPost(
                           _captionController.text,
-                          _imageUrlController.text,
+                          _image!.path,
+                          taggedUsers,
                         )
                             .then((_) {
                           if (mounted) {
