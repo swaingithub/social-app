@@ -2,20 +2,20 @@ import 'package:jivvi/models/user.dart';
 
 class Post {
   final String id;
-  final User author;
   final String caption;
   final String imageUrl;
-  final List<String> likes;
-  final List<String> comments;
-  final List<String> taggedUsers;
+  final User author;
+  final List<User> likes;
+  final List<Comment> comments;
+  final List<User> taggedUsers;
   final String? music;
   final DateTime createdAt;
 
   Post({
     required this.id,
-    required this.author,
     required this.caption,
     required this.imageUrl,
+    required this.author,
     required this.likes,
     required this.comments,
     required this.taggedUsers,
@@ -25,15 +25,38 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json['_id'] ?? '',
-      author: User.fromJson(json['author'] ?? {}),
-      caption: json['caption'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-      likes: List<String>.from(json['likes'] ?? []),
-      comments: List<String>.from(json['comments'] ?? []),
-      taggedUsers: List<String>.from(json['taggedUsers'] ?? []),
-      music: json['music'] ?? '',
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      id: json['id'].toString(),
+      caption: json['caption'],
+      imageUrl: json['imageUrl'],
+      author: User.fromJson(json['author']),
+      likes: (json['likers'] as List).map((i) => User.fromJson(i)).toList(),
+      comments: (json['comments'] as List).map((i) => Comment.fromJson(i)).toList(),
+      taggedUsers: (json['taggedUsers'] as List).map((i) => User.fromJson(i)).toList(),
+      music: json['music'],
+      createdAt: DateTime.parse(json['createdAt']),
+    );
+  }
+}
+
+class Comment {
+  final String id;
+  final String text;
+  final User author;
+  final DateTime createdAt;
+
+  Comment({
+    required this.id,
+    required this.text,
+    required this.author,
+    required this.createdAt,
+  });
+
+  factory Comment.fromJson(Map<String, dynamic> json) {
+    return Comment(
+      id: json['id'].toString(),
+      text: json['text'],
+      author: User.fromJson(json['author']),
+      createdAt: DateTime.parse(json['createdAt']),
     );
   }
 }

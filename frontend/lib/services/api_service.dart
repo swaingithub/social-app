@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -126,8 +125,8 @@ class ApiService {
 
   Future<void> toggleLike(String postId) async {
     final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('$baseUrl/posts/$postId/like'),
+    final response = await http.put(
+      Uri.parse('$baseUrl/posts/like/$postId'),
       headers: {
         'Content-Type': 'application/json',
         'x-auth-token': token ?? '',
@@ -163,7 +162,7 @@ class ApiService {
   Future<Comment> addComment(String postId, String text) async {
     final token = await _getToken();
     final response = await http.post(
-      Uri.parse('$baseUrl/posts/$postId/comments'),
+      Uri.parse('$baseUrl/posts/comment/$postId'),
       headers: {
         'Content-Type': 'application/json',
         'x-auth-token': token ?? '',
