@@ -1,12 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jivvi/models/post.dart';
+import 'package:jivvi/models/user.dart';
 import 'package:jivvi/providers/user_provider.dart';
 import 'package:jivvi/screens/add_post_screen.dart';
 import 'package:jivvi/screens/comments_screen.dart';
+import 'package:jivvi/screens/edit_profile_screen.dart';
 import 'package:jivvi/screens/explore_screen.dart';
 import 'package:jivvi/screens/home_screen.dart';
 import 'package:jivvi/screens/login_screen.dart';
@@ -69,6 +70,12 @@ class AppRouter {
       GoRoute(
         path: '/add-post',
         builder: (context, state) => const AddPostScreen(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) => EditProfileScreen(
+          user: state.extra as User,
+        ),
       ),
     ],
     redirect: (context, state) async {

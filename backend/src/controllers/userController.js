@@ -185,9 +185,11 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    const { bio, profileImageUrl } = req.body;
+    const { username, bio, location, profileImageUrl } = req.body;
 
+    user.username = username ?? user.username;
     user.bio = bio ?? user.bio;
+    user.location = location ?? user.location;
     user.profileImageUrl = profileImageUrl ?? user.profileImageUrl;
 
     await user.save();

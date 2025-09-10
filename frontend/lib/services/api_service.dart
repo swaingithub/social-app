@@ -243,7 +243,12 @@ class ApiService {
     }
   }
 
-  Future<User> updateProfile(String? bio, String? profileImageUrl) async {
+  Future<User> updateProfile({
+    String? username,
+    String? bio,
+    String? location,
+    String? profileImageUrl,
+  }) async {
     final token = await _getToken();
     final response = await http.put(
       Uri.parse('$baseUrl/users/profile'),
@@ -252,7 +257,9 @@ class ApiService {
         'x-auth-token': token ?? '',
       },
       body: jsonEncode({
+        'username': username,
         'bio': bio,
+        'location': location,
         'profileImageUrl': profileImageUrl,
       }),
     );
