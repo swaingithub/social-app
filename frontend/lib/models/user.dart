@@ -1,3 +1,5 @@
+import 'package:jivvi/models/post.dart';
+
 class User {
   final String id;
   final String username;
@@ -7,6 +9,7 @@ class User {
   final String? bio;
   final int followerCount;
   final int followingCount;
+  final List<Post>? posts;
 
   User({
     required this.id,
@@ -17,6 +20,7 @@ class User {
     this.bio,
     required this.followerCount,
     required this.followingCount,
+    this.posts,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,7 @@ class User {
       bio: json['bio'],
       followerCount: json['followerCount'] ?? json['followers']?.length ?? 0,
       followingCount: json['followingCount'] ?? json['following']?.length ?? 0,
+      posts: json['posts'] != null ? (json['posts'] as List).map((i) => Post.fromJson(i)).toList() : null,
     );
   }
 }
