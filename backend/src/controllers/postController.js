@@ -139,3 +139,13 @@ exports.addComment = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+exports.getPostsByUser = async (req, res) => {
+  try {
+    const posts = await Post.find({ author: req.params.userId }).sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};

@@ -179,4 +179,15 @@ class ApiService {
       throw Exception('Failed to add comment');
     }
   }
+
+  Future<List<Post>> getPostsByUser(String userId) async {
+    final response = await http.get(Uri.parse('$baseUrl/posts/user/$userId'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((post) => Post.fromJson(post)).toList();
+    } else {
+      throw Exception('Failed to load posts');
+    }
+  }
 }

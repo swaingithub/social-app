@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { createPost, getPosts, getPostById, deletePost, likePost, unlikePost, addComment } = require('../controllers/postController');
+const { createPost, getPosts, getPostById, deletePost, likePost, unlikePost, addComment, getPostsByUser } = require('../controllers/postController');
 const auth = require('../middleware/auth');
 
 // @route   POST api/posts
@@ -38,5 +38,10 @@ router.put('/unlike/:id', auth, unlikePost);
 // @desc    Comment on a post
 // @access  Private
 router.post('/comment/:id', auth, addComment);
+
+// @route   GET api/posts/user/:userId
+// @desc    Get all posts by a specific user
+// @access  Public
+router.get('/user/:userId', getPostsByUser);
 
 module.exports = router;
