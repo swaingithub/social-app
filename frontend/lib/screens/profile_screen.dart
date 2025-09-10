@@ -167,10 +167,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   PreferredSizeWidget _buildTabBar(ThemeData theme) {
     return TabBar(
       controller: _tabController,
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorWeight: 3,
       indicator: BoxDecoration(
-        borderRadius: BorderRadius.circular(50),
+        borderRadius: BorderRadius.horizontal(
+          left: _tabController.index == 0 ? const Radius.circular(10) : Radius.zero,
+          right: _tabController.index == 2 ? const Radius.circular(10) : Radius.zero,
+        ),
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, spreadRadius: 2)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, spreadRadius: 2)],
       ),
       labelColor: Colors.black,
       unselectedLabelColor: Colors.grey[600],

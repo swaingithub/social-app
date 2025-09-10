@@ -40,6 +40,11 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  void updateUser(User user) {
+    _user = user;
+    notifyListeners();
+  }
+
   Future<void> getMe() async {
     _isLoading = true;
     notifyListeners();

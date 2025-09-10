@@ -50,8 +50,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           location: _locationController.text,
           // TODO: Add profile image upload functionality
         );
-        Provider.of<UserProvider>(context, listen: false).setUser(updatedUser);
-        context.pop();
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.updateUser(updatedUser);
+        if (context.mounted) context.pop();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update profile: $e')),
