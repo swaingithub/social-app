@@ -25,6 +25,7 @@ dependencies:
   flutter_animate: ^4.5.2
   iconsax: ^0.0.8
   audioplayers: ^6.5.1
+  font_awesome_flutter: ^10.7.0
 
 dev_dependencies:
   flutter_test:

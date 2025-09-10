@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jivvi/models/comment.dart';
+import 'package:jivvi/models/comment.dart' as comment_model;
 import 'package:jivvi/models/post.dart';
 import 'package:jivvi/models/user.dart';
 
@@ -25,6 +25,15 @@ class ApiService {
   Future<void> _setToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
+  }
+
+  // Get the current authenticated user
+  Future<User?> getCurrentUser() async {
+    try {
+      return await getMe();
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> clearToken() async {
@@ -116,10 +125,54 @@ class ApiService {
       }),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       return Post.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to create post');
+    }
+  }
+
+  // Like a post
+  Future<Post?> likePost(String postId) async {
+    try {
+      final token = await _getToken();
+      final response = await http.post(
+        Uri.parse('$baseUrl/posts/$postId/like'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token ?? '',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return Post.fromJson(jsonDecode(response.body));
+      }
+      return null;
+    } catch (e) {
+      print('Error liking post: $e');
+      return null;
+    }
+  }
+
+  // Unlike a post
+  Future<Post?> unlikePost(String postId) async {
+    try {
+      final token = await _getToken();
+      final response = await http.post(
+        Uri.parse('$baseUrl/posts/$postId/unlike'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token ?? '',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return Post.fromJson(jsonDecode(response.body));
+      }
+      return null;
+    } catch (e) {
+      print('Error unliking post: $e');
+      return null;
     }
   }
 
@@ -148,18 +201,18 @@ class ApiService {
     }
   }
 
-  Future<List<Comment>> getComments(String postId) async {
+  Future<List<comment_model.Comment>> getComments(String postId) async {
     final response = await http.get(Uri.parse('$baseUrl/posts/$postId/comments'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((comment) => Comment.fromJson(comment)).toList();
+      return data.map((comment) => comment_model.Comment.fromJson(comment)).toList();
     } else {
       throw Exception('Failed to load comments');
     }
   }
 
-  Future<Comment> addComment(String postId, String text) async {
+  Future<comment_model.Comment> addComment(String postId, String text) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('$baseUrl/posts/comment/$postId'),
@@ -173,7 +226,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return Comment.fromJson(jsonDecode(response.body));
+      return comment_model.Comment.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to add comment');
     }

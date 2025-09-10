@@ -73,10 +73,29 @@ exports.deletePost = async (req, res) => {
 exports.likePost = async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id);
-    await post.addLiker(req.user.id);
-    res.json({ msg: 'Post liked' });
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    // Check if already liked
+    const isLiked = await post.hasLikedBy(req.user.id);
+    if (isLiked) {
+      return res.status(400).json({ msg: 'Post already liked' });
+    }
+
+    // Add like
+    await post.addLikedBy(req.user.id);
+    
+    // Reload the post with updated likes
+    const updatedPost = await Post.findByPk(req.params.id, {
+      include: [
+        { model: User, as: 'likedBy', attributes: ['id', 'username', 'profileImageUrl'] },
+        { model: User, as: 'author', attributes: ['id', 'username', 'profileImageUrl'] },
+        { model: Comment, include: [{ model: User, attributes: ['id', 'username', 'profileImageUrl'] }] }
+      ]
+    });
+
+    res.json(updatedPost);
   } catch (err) {
-    console.error(err.message);
+    console.error('Like error:', err);
     res.status(500).send('Server Error');
   }
 };
@@ -84,10 +103,29 @@ exports.likePost = async (req, res) => {
 exports.unlikePost = async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id);
-    await post.removeLiker(req.user.id);
-    res.json({ msg: 'Post unliked' });
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    // Check if not liked
+    const isLiked = await post.hasLikedBy(req.user.id);
+    if (!isLiked) {
+      return res.status(400).json({ msg: 'Post not liked yet' });
+    }
+
+    // Remove like
+    await post.removeLikedBy(req.user.id);
+    
+    // Reload the post with updated likes
+    const updatedPost = await Post.findByPk(req.params.id, {
+      include: [
+        { model: User, as: 'likedBy', attributes: ['id', 'username', 'profileImageUrl'] },
+        { model: User, as: 'author', attributes: ['id', 'username', 'profileImageUrl'] },
+        { model: Comment, include: [{ model: User, attributes: ['id', 'username', 'profileImageUrl'] }] }
+      ]
+    });
+
+    res.json(updatedPost);
   } catch (err) {
-    console.error(err.message);
+    console.error('Unlike error:', err);
     res.status(500).send('Server Error');
   }
 };

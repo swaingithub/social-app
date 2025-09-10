@@ -9,6 +9,7 @@ class Post {
   final List<Comment> comments;
   final List<User> taggedUsers;
   final String? music;
+  final bool isVideo;
   final DateTime createdAt;
 
   Post({
@@ -20,6 +21,7 @@ class Post {
     required this.comments,
     required this.taggedUsers,
     this.music,
+    this.isVideo = false,
     required this.createdAt,
   });
 
@@ -33,6 +35,7 @@ class Post {
       comments: (json['comments'] as List).map((i) => Comment.fromJson(i)).toList(),
       taggedUsers: (json['taggedUsers'] as List).map((i) => User.fromJson(i)).toList(),
       music: json['music'],
+      isVideo: json['isVideo'] ?? false,
       createdAt: DateTime.parse(json['createdAt']),
     );
   }

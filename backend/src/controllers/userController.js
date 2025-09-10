@@ -80,16 +80,34 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ msg: 'No user ID in token' });
+    }
+    
     const user = await User.findByPk(req.user.id, {
       attributes: { exclude: ['password'] },
     });
+    
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
-    res.json(user);
+    
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      profileImageUrl: user.profileImageUrl,
+      bio: user.bio,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error in getMe:', err);
+    res.status(500).json({ 
+      msg: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 };
 
@@ -103,10 +121,21 @@ exports.getUserById = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        res.json(user);
+        res.json({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            profileImageUrl: user.profileImageUrl,
+            bio: user.bio,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error('Error in getUserById:', err);
+        res.status(500).json({ 
+            msg: 'Server error',
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 };
 

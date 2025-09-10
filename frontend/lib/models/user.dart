@@ -3,6 +3,7 @@ class User {
   final String username;
   final String email;
   final String? profileImageUrl;
+  final String? coverImageUrl;
   final String? bio;
   final int followerCount;
   final int followingCount;
@@ -12,6 +13,7 @@ class User {
     required this.username,
     required this.email,
     this.profileImageUrl,
+    this.coverImageUrl,
     this.bio,
     required this.followerCount,
     required this.followingCount,
@@ -23,9 +25,10 @@ class User {
       username: json['username'],
       email: json['email'],
       profileImageUrl: json['profileImageUrl'],
+      coverImageUrl: json['coverImageUrl'],
       bio: json['bio'],
-      followerCount: json['followers']?.length ?? 0,
-      followingCount: json['following']?.length ?? 0,
+      followerCount: json['followerCount'] ?? json['followers']?.length ?? 0,
+      followingCount: json['followingCount'] ?? json['following']?.length ?? 0,
     );
   }
 }

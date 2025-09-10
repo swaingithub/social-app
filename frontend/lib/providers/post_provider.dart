@@ -44,27 +44,28 @@ class PostProvider with ChangeNotifier {
       final postIndex = _posts.indexWhere((post) => post.id == postId);
       if (postIndex == -1) return;
       
+      // Get current user
+      final currentUser = await apiService.getCurrentUser();
+      if (currentUser == null) return;
+      
       // Toggle like status
       final post = _posts[postIndex];
-      final isLiked = post.likes.contains('currentUserId'); // You might want to replace 'currentUserId' with actual user ID
-      
-      if (isLiked) {
-        post.likes.remove('currentUserId');
-      } else {
-        post.likes.add('currentUserId');
-      }
-      
-      // Update the post in the list
-      _posts[postIndex] = post;
-      
-      // Notify listeners to rebuild the UI
-      notifyListeners();
+      final isLiked = post.likes.any((user) => user.id == currentUser.id);
       
       // Call API to update like status
-      await apiService.toggleLike(postId);
+      final updatedPost = isLiked 
+          ? await apiService.unlikePost(postId)
+          : await apiService.likePost(postId);
+      
+      if (updatedPost != null) {
+        // Update the post in the list with the server response
+        _posts[postIndex] = updatedPost;
+        notifyListeners();
+      }
     } catch (e) {
-      // Handle error, maybe revert the UI change
-      notifyListeners();
+      // Handle error
+      print('Error toggling like: $e');
+      // Optionally, you could show an error message to the user
     }
   }
 }
