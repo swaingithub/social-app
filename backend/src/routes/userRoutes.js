@@ -1,7 +1,6 @@
-
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe, getUserById, followUser, unfollowUser, updateUserSettings } = require('../controllers/userController');
+const { register, login, getMe, getUserById, followUser, unfollowUser, updateProfile } = require('../controllers/userController');
 const auth = require('../middleware/auth');
 
 // @route   POST api/users/register
@@ -34,9 +33,9 @@ router.post('/:id/follow', auth, followUser);
 // @access  Private
 router.delete('/:id/follow', auth, unfollowUser);
 
-// @route   PUT api/users/settings
-// @desc    Update user settings
+// @route   PUT api/users/profile
+// @desc    Update user profile
 // @access  Private
-router.put('/settings', auth, updateUserSettings);
+router.put('/profile', auth, updateProfile);
 
 module.exports = router;

@@ -189,4 +189,25 @@ class ApiService {
       throw Exception('Failed to load posts');
     }
   }
+
+  Future<User> updateProfile(String? bio, String? profileImageUrl) async {
+    final token = await _getToken();
+    final response = await http.put(
+      Uri.parse('$baseUrl/users/profile'),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token ?? '',
+      },
+      body: jsonEncode({
+        'bio': bio,
+        'profileImageUrl': profileImageUrl,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update profile');
+    }
+  }
 }

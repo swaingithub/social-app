@@ -148,7 +148,7 @@ exports.unfollowUser = async (req, res) => {
   }
 };
 
-exports.updateUserSettings = async (req, res) => {
+exports.updateProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
 
@@ -156,10 +156,14 @@ exports.updateUserSettings = async (req, res) => {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    user.settings = req.body.settings;
+    const { bio, profileImageUrl } = req.body;
+
+    user.bio = bio ?? user.bio;
+    user.profileImageUrl = profileImageUrl ?? user.profileImageUrl;
+
     await user.save();
 
-    res.json(user.settings);
+    res.json(user);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
