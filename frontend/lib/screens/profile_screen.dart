@@ -5,6 +5,7 @@ import 'package:jivvi/services/api_service.dart';
 import 'package:jivvi/widgets/post_card.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax/iconsax.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.userId});
@@ -15,7 +16,8 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends State<ProfileScreen>
+    with SingleTickerProviderStateMixin {
   late final Future<User> _userFuture;
   late Future<List<Post>> _postsFuture;
   final ApiService _apiService = ApiService();
@@ -24,8 +26,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _userFuture = widget.userId != null ? _apiService.getUser(widget.userId!) : _apiService.getMe();
-    _postsFuture = _userFuture.then((user) => _apiService.getPostsByUser(user.id));
+    _userFuture = widget.userId != null
+        ? _apiService.getUser(widget.userId!)
+        : _apiService.getMe();
+    _postsFuture =
+        _userFuture.then((user) => _apiService.getPostsByUser(user.id));
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabSelection);
   }
@@ -41,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           case 0:
             return _apiService.getPostsByUser(user.id);
           case 1:
-            return Future.value([]); 
+            return Future.value([]);
           case 2:
             return Future.value([]);
           default:
@@ -59,8 +64,48 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black54 : Colors.white54,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 18,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
+        actions: [
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.black54 : Colors.white54,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Iconsax.more,
+                size: 20,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+            onPressed: () {},
+          ),
+        ],
+      ),
       body: FutureBuilder<User>(
         future: _userFuture,
         builder: (context, snapshot) {
@@ -68,11 +113,17 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             return _buildShimmerLoading();
           } else if (snapshot.hasError) {
             return Center(
-              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.black)),
+              child: Text(
+                'Error loading profile',
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.black54,
+                  fontSize: 16,
+                ),
+              ),
             );
           } else {
             final user = snapshot.data!;
-            return _buildProfileView(user, Theme.of(context));
+            return _buildProfileView(user, theme);
           }
         },
       ),
@@ -80,25 +131,60 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildProfileView(User user, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+
     return NestedScrollView(
+      physics: const BouncingScrollPhysics(),
       headerSliverBuilder: (context, innerBoxIsScrolled) {
-        return <Widget>[
+        return [
           SliverAppBar(
-            expandedHeight: 450.0,
-            backgroundColor: Colors.white,
-            iconTheme: const IconThemeData(color: Colors.black),
+            expandedHeight: 380.0,
+            backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+            iconTheme:
+                IconThemeData(color: isDark ? Colors.white : Colors.black),
             pinned: true,
             floating: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: _buildHeader(user, theme),
+            elevation: 0,
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final scrolled = constraints.biggest.height < 100;
+                return FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: _buildHeader(user, theme),
+                  title: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: scrolled ? 1.0 : 0.0,
+                    child: Text(
+                      user.username,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             bottom: _buildTabBar(theme),
           ),
         ];
       },
-      body: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: _buildPostsGrid(),
+      body: Container(
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[900] : Colors.grey[50],
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          child: _buildPostsGrid(),
+        ),
       ),
     );
   }
@@ -122,7 +208,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             children: [
               Text(
                 user.username,
-                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold),
               ),
               if (user.isVerified)
                 const Padding(
@@ -159,15 +248,29 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   PreferredSizeWidget _buildTabBar(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+
     return TabBar(
       controller: _tabController,
+      isScrollable: false,
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorWeight: 3,
       indicator: BoxDecoration(
-        borderRadius: BorderRadius.circular(50),
+        borderRadius: BorderRadius.circular(1),
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, spreadRadius: 2)],
       ),
       labelColor: Colors.black,
-      unselectedLabelColor: Colors.grey[600],
+      unselectedLabelColor: Colors.white,
+      labelStyle: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+      ),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
       tabs: const [
         Tab(text: 'POSTS'),
         Tab(text: 'TAGGED'),
@@ -218,7 +321,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       children: [
         Text(
           count.toString(),
-          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
@@ -244,7 +348,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             itemBuilder: (context, index) => _buildShimmerPostCard(),
           );
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.black)));
+          return Center(
+              child: Text('Error: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.black)));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(
             child: Column(
@@ -254,7 +360,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 const SizedBox(height: 16),
                 const Text(
                   'No Posts Yet',
-                  style: TextStyle(color: Colors.grey, fontSize: 22, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -309,7 +418,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(3, (_) => Container(width: 80, height: 50, color: Colors.white)),
+            children: List.generate(3,
+                (_) => Container(width: 80, height: 50, color: Colors.white)),
           ),
           const SizedBox(height: 20),
           Expanded(
