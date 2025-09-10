@@ -25,6 +25,19 @@ const getSpotifyToken = async () => {
     }
 };
 
+const processTracks = (items) => {
+    return items
+        .map(item => item.track) // Extract the track object
+        .filter(track => track && track.preview_url) // Ensure track is not null and has a preview URL
+        .map(track => ({
+            id: track.id,
+            title: track.name || 'Unknown Title',
+            artist: (track.artists && track.artists.length > 0) ? track.artists.map(artist => artist.name).join(', ') : 'Unknown Artist',
+            albumArt: (track.album && track.album.images && track.album.images.length > 0) ? track.album.images[0].url : '',
+            previewUrl: track.preview_url
+        }));
+};
+
 router.get('/search', async (req, res) => {
     const { q } = req.query;
 
@@ -34,28 +47,12 @@ router.get('/search', async (req, res) => {
 
     try {
         const token = await getSpotifyToken();
-
         const response = await axios.get('https://api.spotify.com/v1/search', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            params: {
-                q,
-                type: 'track',
-                limit: 50
-            }
+            headers: { 'Authorization': `Bearer ${token}` },
+            params: { q, type: 'track', limit: 50 }
         });
 
-        const tracks = response.data.tracks.items
-            .filter(track => track.preview_url)
-            .map(track => ({
-                id: track.id,
-                title: track.name,
-                artist: track.artists.map(artist => artist.name).join(', '),
-                albumArt: track.album.images.length > 0 ? track.album.images[0].url : '',
-                previewUrl: track.preview_url
-            }));
-
+        const tracks = processTracks(response.data.tracks.items.map(track => ({ track })));
         res.json(tracks);
     } catch (error) {
         console.error('Error searching Spotify:', error.response ? error.response.data : error.message);
@@ -66,28 +63,13 @@ router.get('/search', async (req, res) => {
 router.get('/trending', async (req, res) => {
     try {
         const token = await getSpotifyToken();
-        const playlistId = '37i9dQZEVXbMDoHDwVN2tF'; // Global Top 50 playlist ID
-
+        const playlistId = '37i9dQZEVXbMDoHDwVN2tF'; // Global Top 50
         const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            params: {
-                limit: 100
-            }
+            headers: { 'Authorization': `Bearer ${token}` },
+            params: { limit: 100 }
         });
 
-        const tracks = response.data.items
-            .map(item => item.track)
-            .filter(track => track && track.preview_url)
-            .map(track => ({
-                id: track.id,
-                title: track.name,
-                artist: track.artists.map(artist => artist.name).join(', '),
-                albumArt: track.album.images.length > 0 ? track.album.images[0].url : '',
-                previewUrl: track.preview_url
-            }));
-
+        const tracks = processTracks(response.data.items);
         res.json(tracks);
     } catch (error) {
         console.error('Error fetching trending music from Spotify:', error.response ? error.response.data : error.message);
