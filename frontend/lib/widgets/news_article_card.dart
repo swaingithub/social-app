@@ -32,21 +32,41 @@ class NewsArticleCard extends StatelessWidget {
           children: [
             // Image
             if (article.urlToImage != null && article.urlToImage!.isNotEmpty)
-              SizedBox(
+              CachedNetworkImage(
+                imageUrl: article.urlToImage!,
                 height: 200,
                 width: double.infinity,
-                child: CachedNetworkImage(
-                  imageUrl: article.urlToImage!,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
-                      Icons.broken_image,
-                      color: Colors.grey,
-                      size: 40,
-                    ),
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 200,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                  child: const Icon(
+                    Icons.image_outlined,
+                    color: Colors.grey,
+                    size: 40,
                   ),
-                  fadeInDuration: const Duration(milliseconds: 300),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 200,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                  child: const Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.grey,
+                    size: 40,
+                  ),
+                ),
+              )
+            else
+              Container(
+                height: 200,
+                width: double.infinity,
+                color: Colors.grey[200],
+                child: const Icon(
+                  Icons.image_not_supported_outlined,
+                  color: Colors.grey,
+                  size: 40,
                 ),
               ),
             
