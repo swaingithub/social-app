@@ -10,6 +10,7 @@ class Post {
   final List<User> taggedUsers;
   final String? music;
   final bool isVideo;
+  final bool isPrivate;
   final DateTime createdAt;
 
   Post({
@@ -22,6 +23,7 @@ class Post {
     required this.taggedUsers,
     this.music,
     this.isVideo = false,
+    this.isPrivate = false,
     required this.createdAt,
   });
 
@@ -36,6 +38,7 @@ class Post {
       taggedUsers: (json['taggedUsers'] as List).map((i) => User.fromJson(i)).toList(),
       music: json['music'],
       isVideo: json['isVideo'] ?? false,
+      isPrivate: json['isPrivate'] ?? false,
       createdAt: DateTime.parse(json['createdAt']),
     );
   }

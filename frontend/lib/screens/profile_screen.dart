@@ -60,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: FutureBuilder<User>(
         future: _userFuture,
         builder: (context, snapshot) {
@@ -68,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             return _buildShimmerLoading();
           } else if (snapshot.hasError) {
             return Center(
-              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
+              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.black)),
             );
           } else {
             final user = snapshot.data!;
@@ -85,8 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         return <Widget>[
           SliverAppBar(
             expandedHeight: 450.0,
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
+            backgroundColor: Colors.white,
+            iconTheme: const IconThemeData(color: Colors.black),
             pinned: true,
             floating: true,
             flexibleSpace: FlexibleSpaceBar(
@@ -96,17 +96,20 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ),
         ];
       },
-      body: _buildPostsGrid(),
+      body: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: _buildPostsGrid(),
+      ),
     );
   }
 
   Widget _buildHeader(User user, ThemeData theme) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.black, Colors.grey[900]!],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          colors: [Colors.deepPurple, Colors.pinkAccent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       ),
       child: Column(
@@ -114,15 +117,38 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         children: [
           _buildProfileImage(user, theme),
           const SizedBox(height: 20),
-          Text(
-            user.username,
-            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                user.username,
+                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              if (user.isVerified)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(Icons.verified, color: Colors.blue, size: 24),
+                ),
+            ],
           ),
+          const SizedBox(height: 8),
+          if (user.location != null && user.location!.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.location_on, color: Colors.white70, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  user.location!,
+                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+              ],
+            ),
           const SizedBox(height: 8),
           if (user.bio != null && user.bio!.isNotEmpty)
             Text(
               user.bio!,
-              style: TextStyle(color: Colors.grey[400], fontSize: 16),
+              style: TextStyle(color: Colors.grey[200], fontSize: 16),
               textAlign: TextAlign.center,
             ),
           const SizedBox(height: 24),
@@ -137,10 +163,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       controller: _tabController,
       indicator: BoxDecoration(
         borderRadius: BorderRadius.circular(50),
-        color: theme.colorScheme.secondary,
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, spreadRadius: 2)],
       ),
-      labelColor: Colors.white,
-      unselectedLabelColor: Colors.grey[400],
+      labelColor: Colors.black,
+      unselectedLabelColor: Colors.grey[600],
       tabs: const [
         Tab(text: 'POSTS'),
         Tab(text: 'TAGGED'),
@@ -155,10 +182,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       height: 140,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: theme.colorScheme.secondary, width: 4),
+        border: Border.all(color: Colors.white, width: 4),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.secondary.withOpacity(0.4),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 15,
             spreadRadius: 2,
           ),
@@ -170,7 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 user.profileImageUrl!,
                 fit: BoxFit.cover,
               )
-            : const Icon(Icons.person, size: 90, color: Colors.white),
+            : const Icon(Icons.person, size: 90, color: Colors.black),
       ),
     );
   }
@@ -196,7 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(color: Colors.grey[400], fontSize: 14),
+          style: TextStyle(color: Colors.grey[200], fontSize: 14),
         ),
       ],
     );
@@ -217,10 +244,26 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             itemBuilder: (context, index) => _buildShimmerPostCard(),
           );
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.black)));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text('No posts yet', style: TextStyle(color: Colors.grey, fontSize: 18)),
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.camera_enhance, color: Colors.grey[400], size: 80),
+                const SizedBox(height: 16),
+                const Text(
+                  'No Posts Yet',
+                  style: TextStyle(color: Colors.grey, fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Create your first post!',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           );
         } else {
           final posts = snapshot.data!;
@@ -240,11 +283,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Widget _buildShimmerPostCard() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[800]!,
-      highlightColor: Colors.grey[700]!,
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
         ),
       ),
@@ -253,20 +296,20 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Widget _buildShimmerLoading() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[900]!,
-      highlightColor: Colors.grey[800]!,
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
       child: Column(
         children: [
           const SizedBox(height: 100),
-          const CircleAvatar(radius: 70, backgroundColor: Colors.black),
+          const CircleAvatar(radius: 70, backgroundColor: Colors.white),
           const SizedBox(height: 20),
-          Container(width: 200, height: 28, color: Colors.black),
+          Container(width: 200, height: 28, color: Colors.white),
           const SizedBox(height: 8),
-          Container(width: 150, height: 16, color: Colors.black),
+          Container(width: 150, height: 16, color: Colors.white),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(3, (_) => Container(width: 80, height: 50, color: Colors.black)),
+            children: List.generate(3, (_) => Container(width: 80, height: 50, color: Colors.white)),
           ),
           const SizedBox(height: 20),
           Expanded(

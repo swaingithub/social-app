@@ -8,31 +8,28 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12.0),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.network(
-            post.imageUrl,
-            fit: BoxFit.cover,
-          ),
-          _buildGradientOverlay(),
-          _buildPostDetails(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGradientOverlay() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.black.withOpacity(0.7),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.0),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              post.imageUrl,
+              fit: BoxFit.cover,
+            ),
+            _buildPostDetails(),
           ],
         ),
       ),
@@ -45,19 +42,20 @@ class PostCard extends StatelessWidget {
       left: 8,
       right: 8,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.favorite, color: Colors.white, size: 18),
+          const Icon(Icons.favorite, color: Colors.pink, size: 22),
           const SizedBox(width: 4),
           Text(
             post.likes.length.toString(),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
           ),
-          const SizedBox(width: 12),
-          const Icon(Icons.comment, color: Colors.white, size: 18),
+          const SizedBox(width: 16),
+          const Icon(Icons.comment, color: Colors.grey, size: 22),
           const SizedBox(width: 4),
           Text(
             post.comments.length.toString(),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ],
       ),
