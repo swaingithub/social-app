@@ -49,6 +49,10 @@ class AppRouter {
             builder: (context, state) => const HomeScreen(),
           ),
           GoRoute(
+            path: '/stories',
+            builder: (context, state) => const StoriesScreen(),
+          ),
+          GoRoute(
             path: '/news',
             builder: (context, state) => const NewsScreen(),
           ),

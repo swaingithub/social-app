@@ -17,10 +17,6 @@ class ScaffoldWithBottomNavBar extends StatelessWidget {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.article),
-            label: 'News',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Explore',
           ),
@@ -42,14 +38,12 @@ class ScaffoldWithBottomNavBar extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/news')) {
+    if (location.startsWith('/explore')) {
       return 1;
-    } else if (location.startsWith('/explore')) {
-      return 2;
     } else if (location.startsWith('/add-post')) {
-      return 3;
+      return 2;
     } else if (location.startsWith('/profile')) {
-      return 4;
+      return 3;
     }
     return 0;
   }
@@ -60,15 +54,12 @@ class ScaffoldWithBottomNavBar extends StatelessWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/news');
-        break;
-      case 2:
         context.go('/explore');
         break;
-      case 3:
+      case 2:
         context.go('/add-post');
         break;
-      case 4:
+      case 3:
         context.go('/profile');
         break;
     }

@@ -11,49 +11,20 @@ class StoriesScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Stories & News'),
       ),
-      body: ListView(
-        children: const [
-          StoriesBar(),
+      body: const Column(
+        children: [
+          // Stories bar with fixed height
+          SizedBox(
+            height: 120, // Fixed height for stories bar
+            child: StoriesBar(),
+          ),
           SizedBox(height: 16),
-          // _buildNewsFeed(),
-          NewsScreen()
+          // News section taking remaining space
+          Expanded(
+            child: NewsScreen(),
+          ),
         ],
       ),
     );
   }
-
-//   Widget _buildNewsFeed() {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//           child: Text(
-//             'Latest News',
-//             style: TextStyle(
-//               fontSize: 20,
-//               fontWeight: FontWeight.bold,
-//             ),
-//           ),
-//         ),
-//         const SizedBox(height: 8),
-//         ListView.builder(
-//           shrinkWrap: true,
-//           physics: const NeverScrollableScrollPhysics(),
-//           itemCount: 10, // Placeholder for news items
-//           itemBuilder: (context, index) {
-//             return Card(
-//               margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-//               child: ListTile(
-//                 leading: const Icon(Icons.article),
-//                 title: Text('News Headline ${index + 1}'),
-//                 subtitle: const Text('This is a short description of the news article.'),
-//                 onTap: () {},
-//               ),
-//             );
-//           },
-//         ),
-//       ],
-//     );
-//   }
 }
