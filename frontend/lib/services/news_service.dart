@@ -14,8 +14,15 @@ class NewsService {
     }
   }
 
-  Future<List<Article>> getNews() async {
-    final response = await http.get(Uri.parse('$baseUrl/news'));
+  Future<List<Article>> getNews({String? category, String? query}) async {
+    final uri = Uri.parse('$baseUrl/news').replace(
+      queryParameters: {
+        if (category != null) 'category': category,
+        if (query != null) 'q': query,
+      },
+    );
+
+    final response = await http.get(uri);
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
