@@ -41,10 +41,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           case 0:
             return _apiService.getPostsByUser(user.id);
           case 1:
-            // Replace with a method to get tagged posts
             return Future.value([]); 
           case 2:
-            // Replace with a method to get liked posts
             return Future.value([]);
           default:
             return Future.value([]);
@@ -61,9 +59,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
+      backgroundColor: Colors.black,
       body: FutureBuilder<User>(
         future: _userFuture,
         builder: (context, snapshot) {
@@ -71,11 +68,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             return _buildShimmerLoading();
           } else if (snapshot.hasError) {
             return Center(
-              child: Text('Error: ${snapshot.error}'),
+              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
             );
           } else {
             final user = snapshot.data!;
-            return _buildProfileView(user, theme);
+            return _buildProfileView(user, Theme.of(context));
           }
         },
       ),
@@ -83,108 +80,97 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildProfileView(User user, ThemeData theme) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 400.0,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          pinned: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => context.pop(),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              onPressed: () {},
+    return NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return <Widget>[
+          SliverAppBar(
+            expandedHeight: 450.0,
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            pinned: true,
+            floating: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: _buildHeader(user, theme),
             ),
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.5),
-                    Colors.black.withOpacity(0.2),
-                  ],
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 30),
-                  _buildProfileImage(user, theme),
-                  const SizedBox(height: 16),
-                  Text(
-                    user.username,
-                    style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  if (user.bio != null && user.bio!.isNotEmpty)
-                    Text(
-                      user.bio!,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const SizedBox(height: 24),
-                  _buildStatsRow(user, theme),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
+            bottom: _buildTabBar(theme),
           ),
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: theme.colorScheme.secondary,
-            labelColor: theme.colorScheme.secondary,
-            unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(icon: Icon(Icons.grid_on)),
-              Tab(icon: Icon(Icons.person_pin_outlined)),
-              Tab(icon: Icon(Icons.favorite_border)),
-            ],
-          ),
+        ];
+      },
+      body: _buildPostsGrid(),
+    );
+  }
+
+  Widget _buildHeader(User user, ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.black, Colors.grey[900]!],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        _buildPostsGrid(),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildProfileImage(user, theme),
+          const SizedBox(height: 20),
+          Text(
+            user.username,
+            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          if (user.bio != null && user.bio!.isNotEmpty)
+            Text(
+              user.bio!,
+              style: TextStyle(color: Colors.grey[400], fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+          const SizedBox(height: 24),
+          _buildStatsRow(user, theme),
+        ],
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildTabBar(ThemeData theme) {
+    return TabBar(
+      controller: _tabController,
+      indicator: BoxDecoration(
+        borderRadius: BorderRadius.circular(50),
+        color: theme.colorScheme.secondary,
+      ),
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.grey[400],
+      tabs: const [
+        Tab(text: 'POSTS'),
+        Tab(text: 'TAGGED'),
+        Tab(text: 'LIKED'),
       ],
     );
   }
 
   Widget _buildProfileImage(User user, ThemeData theme) {
     return Container(
-      width: 130,
-      height: 130,
+      width: 140,
+      height: 140,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.secondary,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: Colors.white, width: 3),
+        border: Border.all(color: theme.colorScheme.secondary, width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.secondary.withOpacity(0.4),
+            blurRadius: 15,
+            spreadRadius: 2,
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: ClipOval(
-          child: user.profileImageUrl != null
-              ? Image.network(
-                  user.profileImageUrl!,
-                  fit: BoxFit.cover,
-                )
-              : const Icon(
-                  Icons.person,
-                  size: 80,
-                  color: Colors.white,
-                ),
-        ),
+      child: ClipOval(
+        child: user.profileImageUrl != null
+            ? Image.network(
+                user.profileImageUrl!,
+                fit: BoxFit.cover,
+              )
+            : const Icon(Icons.person, size: 90, color: Colors.white),
       ),
     );
   }
@@ -205,12 +191,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       children: [
         Text(
           count.toString(),
-          style: theme.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+          style: TextStyle(color: Colors.grey[400], fontSize: 14),
         ),
       ],
     );
@@ -221,104 +207,77 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       future: _postsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return SliverToBoxAdapter(
-            child: Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
-              highlightColor: Colors.grey[100]!,
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 2,
-                  mainAxisSpacing: 2,
-                ),
-                itemCount: 9,
-                itemBuilder: (context, index) => Container(color: Colors.white),
-              ),
+          return GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
             ),
+            itemCount: 9,
+            itemBuilder: (context, index) => _buildShimmerPostCard(),
           );
         } else if (snapshot.hasError) {
-          return SliverToBoxAdapter(child: Center(child: Text('Error: ${snapshot.error}')));
+          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const SliverToBoxAdapter(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(50.0),
-                child: Text('No posts yet', style: TextStyle(color: Colors.grey, fontSize: 18)),
-              ),
-            ),
+          return const Center(
+            child: Text('No posts yet', style: TextStyle(color: Colors.grey, fontSize: 18)),
           );
         } else {
           final posts = snapshot.data!;
-          return SliverGrid(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => PostCard(post: posts[index]),
-              childCount: posts.length,
-            ),
+          return GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 2,
-              mainAxisSpacing: 2,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
             ),
+            itemCount: posts.length,
+            itemBuilder: (context, index) => PostCard(post: posts[index]),
           );
         }
       },
     );
   }
 
+  Widget _buildShimmerPostCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[800]!,
+      highlightColor: Colors.grey[700]!,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
   Widget _buildShimmerLoading() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 400.0,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 30),
-                  const CircleAvatar(radius: 65, backgroundColor: Colors.white),
-                  const SizedBox(height: 16),
-                  Container(width: 200, height: 24, color: Colors.white),
-                  const SizedBox(height: 8),
-                  Container(width: 150, height: 16, color: Colors.white),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Container(width: 60, height: 40, color: Colors.white),
-                      Container(width: 60, height: 40, color: Colors.white),
-                      Container(width: 60, height: 40, color: Colors.white),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            bottom: TabBar(
-              controller: _tabController,
-              indicatorColor: Theme.of(context).colorScheme.secondary,
-              labelColor: Theme.of(context).colorScheme.secondary,
-              unselectedLabelColor: Colors.white70,
-              tabs: const [
-                Tab(icon: Icon(Icons.grid_on)),
-                Tab(icon: Icon(Icons.person_pin_outlined)),
-                Tab(icon: Icon(Icons.favorite_border)),
-              ],
-            ),
+      baseColor: Colors.grey[900]!,
+      highlightColor: Colors.grey[800]!,
+      child: Column(
+        children: [
+          const SizedBox(height: 100),
+          const CircleAvatar(radius: 70, backgroundColor: Colors.black),
+          const SizedBox(height: 20),
+          Container(width: 200, height: 28, color: Colors.black),
+          const SizedBox(height: 8),
+          Container(width: 150, height: 16, color: Colors.black),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(3, (_) => Container(width: 80, height: 50, color: Colors.black)),
           ),
-          SliverGrid(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => Container(color: Colors.white),
-              childCount: 9,
-            ),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 2,
-              mainAxisSpacing: 2,
+          const SizedBox(height: 20),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
+              ),
+              itemCount: 9,
+              itemBuilder: (context, index) => _buildShimmerPostCard(),
             ),
           ),
         ],
