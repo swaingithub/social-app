@@ -1,5 +1,4 @@
-
-import 'package:jivvi/models/user.dart';
+import 'package:social_media_app/models/user.dart';
 
 class Post {
   final String id;
@@ -9,6 +8,7 @@ class Post {
   final List<String> likes;
   final List<String> comments;
   final List<String> taggedUsers;
+  final String? music;
   final DateTime createdAt;
 
   Post({
@@ -19,6 +19,7 @@ class Post {
     required this.likes,
     required this.comments,
     required this.taggedUsers,
+    this.music,
     required this.createdAt,
   });
 
@@ -31,6 +32,7 @@ class Post {
       likes: List<String>.from(json['likes'] ?? []),
       comments: List<String>.from(json['comments'] ?? []),
       taggedUsers: List<String>.from(json['taggedUsers'] ?? []),
+      music: json['music'] ?? '',
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
     );
   }

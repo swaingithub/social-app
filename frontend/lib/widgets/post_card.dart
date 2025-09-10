@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:jivvi/models/post.dart';
-import 'package:jivvi/providers/post_provider.dart';
+import 'package:social_media_app/models/post.dart';
+import 'package:social_media_app/providers/post_provider.dart';
 
 class PostCard extends StatefulWidget {
   const PostCard({super.key, required this.post});
@@ -226,6 +226,22 @@ class _PostCardState extends State<PostCard> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (widget.post.music != null && widget.post.music!.isNotEmpty) ...[
+            Row(
+              children: [
+                const Icon(Icons.music_note, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.post.music!,
+                    style: textTheme.bodyMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
           Text(
             '${widget.post.likes.length} likes',
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),

@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:jivvi/models/post.dart';
-import 'package:jivvi/services/api_service.dart';
+import 'package:social_media_app/models/post.dart';
+import 'package:social_media_app/services/api_service.dart';
 
 class PostProvider with ChangeNotifier {
   final ApiService apiService;
@@ -28,9 +28,9 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  Future<void> createPost(String caption, String imageUrl, List<String> taggedUsers) async {
+  Future<void> createPost(String caption, String imageUrl, List<String> taggedUsers, String? music) async {
     try {
-      final newPost = await apiService.createPost(caption, imageUrl, taggedUsers);
+      final newPost = await apiService.createPost(caption, imageUrl, taggedUsers, music);
       _posts.insert(0, newPost);
       notifyListeners();
     } catch (e) {

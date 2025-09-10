@@ -3,13 +3,15 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 
 exports.createPost = async (req, res) => {
-  const { caption, imageUrl } = req.body;
+  const { caption, imageUrl, taggedUsers, music } = req.body;
 
   try {
     const newPost = new Post({
       caption,
       imageUrl,
       author: req.user.id,
+      taggedUsers,
+      music,
     });
 
     const post = await newPost.save();

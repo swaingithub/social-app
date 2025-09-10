@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:jivvi/providers/post_provider.dart';
+import 'package:social_media_app/providers/post_provider.dart';
+import 'package:social_media_app/screens/trending_music_screen.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -18,6 +19,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final _captionController = TextEditingController();
   final _taggedUsersController = TextEditingController();
   File? _image;
+  String? _selectedMusic;
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -133,7 +135,23 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     ),
                     child: Column(
                       children: [
-                        _buildOptionRow(context, icon: Icons.music_note_outlined, label: 'Add Music'),
+                        _buildOptionRow(
+                          context,
+                          icon: Icons.music_note_outlined,
+                          label: _selectedMusic ?? 'Add Music',
+                          onTap: () async {
+                            final result = await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const TrendingMusicScreen(),
+                              ),
+                            );
+                            if (result != null) {
+                              setState(() {
+                                _selectedMusic = result;
+                              });
+                            }
+                          },
+                        ),
                         Divider(height: 1, color: theme.dividerColor),
                         _buildOptionRow(context, icon: Icons.location_on_outlined, label: 'Add Location', isLast: true),
                       ],
@@ -157,6 +175,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                           _captionController.text,
                           _image!.path,
                           taggedUsers,
+                          _selectedMusic,
                         )
                             .then((_) {
                           if (mounted) {
@@ -181,7 +200,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     );
   }
 
-  Widget _buildOptionRow(BuildContext context, {required IconData icon, required String label, bool isFirst = false, bool isLast = false}) {
+  Widget _buildOptionRow(BuildContext context, {required IconData icon, required String label, bool isFirst = false, bool isLast = false, VoidCallback? onTap}) {
     final theme = Theme.of(context);
     final borderRadius = isFirst
         ? const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))
@@ -190,9 +209,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
             : BorderRadius.zero;
 
     return InkWell(
-      onTap: () {
-        // TODO: Implement option functionality
-      },
+      onTap: onTap,
       borderRadius: borderRadius,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),

@@ -25,6 +25,9 @@ const PostSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  music: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

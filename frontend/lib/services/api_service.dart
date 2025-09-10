@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jivvi/models/comment.dart';
-import 'package:jivvi/models/post.dart';
-import 'package:jivvi/models/user.dart';
+import 'package:social_media_app/models/comment.dart';
+import 'package:social_media_app/models/post.dart';
+import 'package:social_media_app/models/user.dart';
 
 class ApiService {
   late final String baseUrl;
@@ -101,7 +101,7 @@ class ApiService {
     }
   }
 
-  Future<Post> createPost(String caption, String imageUrl, List<String> taggedUsers) async {
+  Future<Post> createPost(String caption, String imageUrl, List<String> taggedUsers, String? music) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse('$baseUrl/posts'),
@@ -113,6 +113,7 @@ class ApiService {
         'caption': caption,
         'imageUrl': imageUrl,
         'taggedUsers': taggedUsers,
+        'music': music,
       }),
     );
 
