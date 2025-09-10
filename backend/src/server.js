@@ -5,6 +5,7 @@ const sequelize = require('./config/sequelize');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const feedRoutes = require('./routes/feedRoutes');
+const spotifyRoutes = require('../routes/spotify'); // Added spotify routes
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(express.json({ extended: false }));
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/feed', feedRoutes);
+app.use('/api/spotify', spotifyRoutes); // Added spotify routes
 
 const PORT = process.env.PORT || 5000;
 
