@@ -21,9 +21,9 @@ class Article {
       description: json['description'] as String?,
       url: json['url'] as String?,
       urlToImage: json['urlToImage'] as String?,
-      publishedAt: json['publishedAt'] != null 
-          ? DateTime.tryParse(json['publishedAt'] as String)
-          : null,
+      publishedAt: json['publishedAt'] == null
+          ? null
+          : DateTime.tryParse(json['publishedAt'] as String),
       source: json['source'] != null
           ? Source.fromJson(json['source'] as Map<String, dynamic>)
           : null,

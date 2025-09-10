@@ -25,8 +25,9 @@ class NewsService {
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((article) => Article.fromJson(article)).toList();
+      final data = jsonDecode(response.body);
+      final articles = data['articles'] as List;
+      return articles.map((article) => Article.fromJson(article)).toList();
     } else {
       throw Exception('Failed to load news');
     }
