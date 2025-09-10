@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:jivvi/models/article.dart';
 import 'package:jivvi/services/news_service.dart';
 import 'package:jivvi/theme/app_colors.dart';
-import 'package:jivvi/widgets/news_article_card.dart';
+import 'package:jivvi/widgets/news_article_list_item.dart';
+import 'package:jivvi/widgets/news_article_card_placeholder.dart';
 import 'package:jivvi/widgets/search_bar.dart' as custom;
 
 enum NewsCategory {
@@ -140,8 +141,15 @@ class _NewsScreenState extends State<NewsScreen> with SingleTickerProviderStateM
           future: _newsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: NewsArticleCardPlaceholder(),
+                  );
+                },
               );
             } else if (snapshot.hasError) {
               return Center(
@@ -194,10 +202,7 @@ class _NewsScreenState extends State<NewsScreen> with SingleTickerProviderStateM
                 itemCount: articles.length,
                 itemBuilder: (context, index) {
                   final article = articles[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: NewsArticleCard(article: article),
-                  );
+                  return NewsArticleListItem(article: article);
                 },
               );
             }

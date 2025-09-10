@@ -3,7 +3,6 @@ import 'package:jivvi/models/article.dart';
 import 'package:jivvi/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
 
 class NewsArticleCard extends StatelessWidget {
   final Article article;
@@ -39,19 +38,10 @@ class NewsArticleCard extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: article.urlToImage!,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(
-                      color: Colors.white,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  ),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[200],
                     child: const Icon(
-                      Icons.image_not_supported_outlined,
+                      Icons.broken_image,
                       color: Colors.grey,
                       size: 40,
                     ),
