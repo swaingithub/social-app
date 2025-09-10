@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:social_media_app/models/post.dart';
-import 'package:social_media_app/services/api_service.dart';
+import 'package:jivvi/models/post.dart';
+import 'package:jivvi/services/api_service.dart';
 
 class PostProvider with ChangeNotifier {
   final ApiService apiService;

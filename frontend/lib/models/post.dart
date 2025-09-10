@@ -1,4 +1,4 @@
-import 'package:social_media_app/models/user.dart';
+import 'package:jivvi/models/user.dart';
 
 class Post {
   final String id;

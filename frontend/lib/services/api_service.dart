@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:social_media_app/models/comment.dart';
-import 'package:social_media_app/models/post.dart';
-import 'package:social_media_app/models/user.dart';
+import 'package:jivvi/models/comment.dart';
+import 'package:jivvi/models/post.dart';
+import 'package:jivvi/models/user.dart';
 
 class ApiService {
   late final String baseUrl;
