@@ -57,17 +57,6 @@ class NewsArticleCard extends StatelessWidget {
                     size: 40,
                   ),
                 ),
-              )
-            else
-              Container(
-                height: 200,
-                width: double.infinity,
-                color: Colors.grey[200],
-                child: const Icon(
-                  Icons.image_not_supported_outlined,
-                  color: Colors.grey,
-                  size: 40,
-                ),
               ),
             
             // Content
