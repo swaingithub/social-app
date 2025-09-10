@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
@@ -43,17 +42,19 @@ router.get('/search', async (req, res) => {
             params: {
                 q,
                 type: 'track',
-                limit: 20
+                limit: 50 // Increased limit to get more results
             }
         });
 
-        const tracks = response.data.tracks.items.map(track => ({
-            id: track.id,
-            title: track.name,
-            artist: track.artists.map(artist => artist.name).join(', '),
-            albumArt: track.album.images.length > 0 ? track.album.images[0].url : '',
-            previewUrl: track.preview_url
-        }));
+        const tracks = response.data.tracks.items
+            .filter(track => track.preview_url) // Filter out tracks without a preview URL
+            .map(track => ({
+                id: track.id,
+                title: track.name,
+                artist: track.artists.map(artist => artist.name).join(', '),
+                albumArt: track.album.images.length > 0 ? track.album.images[0].url : '',
+                previewUrl: track.preview_url
+            }));
 
         res.json(tracks);
     } catch (error) {
