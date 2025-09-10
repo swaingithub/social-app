@@ -63,7 +63,20 @@ router.get('/search', async (req, res) => {
 router.get('/trending', async (req, res) => {
     try {
         const token = await getSpotifyToken();
-        const playlistId = '37i9dQZEVXbMDoHDwVN2tF'; // Global Top 50
+
+        // First, find a featured playlist
+        const featuredPlaylistsResponse = await axios.get('https://api.spotify.com/v1/browse/featured-playlists', {
+            headers: { 'Authorization': `Bearer ${token}` },
+            params: { limit: 1 } // We only need one
+        });
+
+        if (featuredPlaylistsResponse.data.playlists.items.length === 0) {
+            return res.status(404).json({ message: 'No featured playlists found on Spotify.' });
+        }
+
+        const playlistId = featuredPlaylistsResponse.data.playlists.items[0].id;
+
+        // Then, get the tracks from that playlist
         const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
             headers: { 'Authorization': `Bearer ${token}` },
             params: { limit: 100 }
