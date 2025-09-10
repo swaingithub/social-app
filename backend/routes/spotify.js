@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
@@ -67,7 +66,7 @@ router.get('/search', async (req, res) => {
 router.get('/trending', async (req, res) => {
     try {
         const token = await getSpotifyToken();
-        const playlistId = '37i9dQZF1DXcBWIGoYBM5M'; // Today's Top Hits playlist ID
+        const playlistId = '37i9dQZEVXbMDoHDwVN2tF'; // Global Top 50 playlist ID
 
         const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
             headers: {
