@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/models/post.dart';
-import 'package:social_media_app/widgets/comment_card.dart';
+import 'package:jivvi/models/post.dart';
+import 'package:jivvi/widgets/comment_card.dart';
 
 class CommentsScreen extends StatefulWidget {
   const CommentsScreen({super.key, required this.post});

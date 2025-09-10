@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/screens/login_screen.dart';
-import 'package:social_media_app/theme/theme_provider.dart';
+import 'package:jivvi/screens/login_screen.dart';
+import 'package:jivvi/theme/theme_provider.dart';
 void main() {
   testWidgets('Login screen shows correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.

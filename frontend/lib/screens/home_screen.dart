@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:social_media_app/providers/post_provider.dart';
-import 'package:social_media_app/widgets/post_card.dart';
+import 'package:jivvi/providers/post_provider.dart';
+import 'package:jivvi/widgets/post_card.dart';
 
 import '../widgets/post_placeholder.dart';
 

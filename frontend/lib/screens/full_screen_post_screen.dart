@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/widgets/full_screen_post.dart';
+import 'package:jivvi/widgets/full_screen_post.dart';
 
 class FullScreenPostScreen extends StatelessWidget {
   const FullScreenPostScreen({

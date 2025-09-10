@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/models/post.dart';
-import 'package:social_media_app/providers/post_provider.dart';
+import 'package:jivvi/models/post.dart';
+import 'package:jivvi/providers/post_provider.dart';
 
 class PostCard extends StatefulWidget {
   const PostCard({super.key, required this.post});

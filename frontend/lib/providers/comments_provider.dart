@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/models/comment.dart';
-import 'package:social_media_app/services/api_service.dart';
+import 'package:jivvi/models/comment.dart';
+import 'package:jivvi/services/api_service.dart';
 
 class CommentsProvider with ChangeNotifier {
   final ApiService _apiService;

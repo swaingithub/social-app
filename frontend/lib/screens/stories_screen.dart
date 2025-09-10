@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/widgets/stories_bar.dart';
+import 'package:jivvi/widgets/stories_bar.dart';
 
 class StoriesScreen extends StatelessWidget {
   const StoriesScreen({super.key});

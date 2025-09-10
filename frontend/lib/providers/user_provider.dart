@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:social_media_app/models/user.dart';
-import 'package:social_media_app/services/api_service.dart';
+import 'package:jivvi/models/user.dart';
+import 'package:jivvi/services/api_service.dart';
 
 class UserProvider with ChangeNotifier {
   final ApiService apiService;

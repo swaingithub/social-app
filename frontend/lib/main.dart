@@ -1,11 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/providers/post_provider.dart';
-import 'package:social_media_app/providers/user_provider.dart';
-import 'package:social_media_app/routing/app_router.dart';
-import 'package:social_media_app/services/api_service.dart';
-import 'package:social_media_app/theme/theme_provider.dart';
+import 'package:jivvi/providers/post_provider.dart';
+import 'package:jivvi/providers/user_provider.dart';
+import 'package:jivvi/routing/app_router.dart';
+import 'package:jivvi/services/api_service.dart';
+import 'package:jivvi/theme/theme_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
