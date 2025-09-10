@@ -17,6 +17,10 @@ class ScaffoldWithBottomNavBar extends StatelessWidget {
             label: 'Home',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.article),
+            label: 'News',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Explore',
           ),
@@ -25,8 +29,8 @@ class ScaffoldWithBottomNavBar extends StatelessWidget {
             label: 'Add',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.account_circle),
+            label: 'Account',
           ),
         ],
         currentIndex: _calculateSelectedIndex(context),
@@ -38,12 +42,14 @@ class ScaffoldWithBottomNavBar extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/explore')) {
+    if (location.startsWith('/news')) {
       return 1;
-    } else if (location.startsWith('/add-post')) {
+    } else if (location.startsWith('/explore')) {
       return 2;
-    } else if (location.startsWith('/profile')) {
+    } else if (location.startsWith('/add-post')) {
       return 3;
+    } else if (location.startsWith('/profile')) {
+      return 4;
     }
     return 0;
   }
@@ -54,12 +60,15 @@ class ScaffoldWithBottomNavBar extends StatelessWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/explore');
+        context.go('/news');
         break;
       case 2:
-        context.go('/add-post');
+        context.go('/explore');
         break;
       case 3:
+        context.go('/add-post');
+        break;
+      case 4:
         context.go('/profile');
         break;
     }

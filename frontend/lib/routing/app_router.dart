@@ -49,12 +49,16 @@ class AppRouter {
             builder: (context, state) => const HomeScreen(),
           ),
           GoRoute(
-            path: '/stories',
-            builder: (context, state) => const StoriesScreen(),
+            path: '/news',
+            builder: (context, state) => const NewsScreen(),
           ),
           GoRoute(
             path: '/explore',
             builder: (context, state) => const ExploreScreen(),
+          ),
+          GoRoute(
+            path: '/add-post',
+            builder: (context, state) => const AddPostScreen(),
           ),
           GoRoute(
             path: '/profile',
@@ -69,18 +73,10 @@ class AppRouter {
         ],
       ),
       GoRoute(
-        path: '/add-post',
-        builder: (context, state) => const AddPostScreen(),
-      ),
-      GoRoute(
         path: '/edit-profile',
         builder: (context, state) => EditProfileScreen(
           user: state.extra as User,
         ),
-      ),
-      GoRoute(
-        path: '/news',
-        builder: (context, state) => const NewsScreen(),
       ),
     ],
     redirect: (context, state) async {
