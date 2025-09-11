@@ -216,14 +216,21 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   // Tabs and content
-                  const TabBar(
-                    labelColor: Colors.black,
-                    indicatorColor: Colors.purple,
-                    tabs: [
-                      Tab(icon: Icon(Icons.grid_on)),
-                      Tab(icon: Icon(Icons.play_circle_outline)),
-                      Tab(icon: Icon(Icons.tag)),
-                    ],
+                  const SizedBox(height: 8),
+                  const SizedBox(
+                    height: 40, // Fixed height for the tab bar
+                    child: TabBar(
+                      labelColor: Colors.black,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: Colors.purple,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelPadding: EdgeInsets.zero,
+                      tabs: [
+                        Tab(icon: Icon(Icons.grid_on, size: 24)),
+                        Tab(icon: Icon(Icons.play_circle_outline, size: 24)),
+                        Tab(icon: Icon(Icons.tag, size: 24)),
+                      ],
+                    ),
                   ),
                   Expanded(
                     child: TabBarView(
