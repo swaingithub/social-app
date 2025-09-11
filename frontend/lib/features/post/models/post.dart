@@ -72,4 +72,24 @@ class Post {
       return 'Just now';
     }
   }
+
+  Post copyWith({
+    String? id,
+    String? mediaUrl,
+    String? caption,
+    User? author,
+    List<String>? likes,
+    List<Comment>? comments,
+    DateTime? createdAt,
+  }) {
+    return Post(
+      id: id ?? this.id,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      caption: caption ?? this.caption,
+      author: author ?? this.author,
+      likes: likes ?? this.likes,
+      comments: comments ?? this.comments,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

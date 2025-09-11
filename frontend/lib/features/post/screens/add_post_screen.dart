@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:jivvi/core/constants/app_colors.dart';
 import 'package:jivvi/features/post/providers/post_provider.dart';
 import 'package:jivvi/features/misc/screens/trending_music_screen.dart';
 
@@ -31,192 +32,344 @@ class _AddPostScreenState extends State<AddPostScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final postProvider = Provider.of<PostProvider>(context);
-    final theme = Theme.of(context);
+  void dispose() {
+    _captionController.dispose();
+    _taggedUsersController.dispose();
+    super.dispose();
+  }
 
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(bottom: 100), // Padding for floating button
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.close, size: 24),
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Navigator.of(context).pop();
+              }
+            },
+            color: AppColors.onSurface,
+          ),
+          const Text(
+            'Create Post',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.onSurface,
+            ),
+          ),
+          const SizedBox(width: 48), // For balance
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagePicker() {
+    return GestureDetector(
+      onTap: _pickImage,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: Colors.grey.shade200,
+            width: 1.5,
+          ),
+        ),
+        child: _image == null
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.close, size: 30),
-                          onPressed: () => Navigator.of(context).pop(),
-                          tooltip: 'Cancel',
-                        ),
-                        Text(
-                          'New Post',
-                          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 48), // Balance the close button
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Image Input
-                  AspectRatio(
-                    aspectRatio: 1, // Square aspect ratio
-                    child: GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: theme.dividerColor, width: 1.5),
-                          image: _image != null
-                              ? DecorationImage(
-                                  image: FileImage(_image!),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                        child: _image == null
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.photo_library_outlined, size: 60, color: theme.dividerColor),
-                                    const SizedBox(height: 16),
-                                    Text('Tap to add a photo', style: theme.textTheme.bodyLarge),
-                                  ],
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Caption
-                  TextField(
-                    controller: _captionController,
-                    decoration: InputDecoration(
-                      hintText: 'Write a caption...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: theme.dividerColor, width: 1),
-                      ),
-                    ),
-                    maxLines: 4,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Tagged Users
-                  TextField(
-                    controller: _taggedUsersController,
-                    decoration: InputDecoration(
-                      hintText: 'Tag people (comma separated)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: theme.dividerColor, width: 1),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Additional Actions
+                  const SizedBox(height: 40),
                   Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: theme.dividerColor, width: 1),
+                      shape: BoxShape.circle,
+                      color: AppColors.primaryColor.withOpacity(0.1),
                     ),
-                    child: Column(
-                      children: [
-                        _buildOptionRow(
-                          context,
-                          icon: Icons.music_note_outlined,
-                          label: _selectedMusic ?? 'Add Music',
-                          onTap: () async {
-                            final result = await context.push<String>('/trending-music');
-                            if (result != null) {
-                              setState(() {
-                                _selectedMusic = result;
-                              });
-                            }
-                          },
-                        ),
-                        Divider(height: 1, color: theme.dividerColor),
-                        _buildOptionRow(context, icon: Icons.location_on_outlined, label: 'Add Location', isLast: true),
-                      ],
+                    child: Icon(
+                      Icons.image,
+                      size: 32,
+                      color: AppColors.primaryColor,
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Add Photo/Video',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Tap to add media to your post',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.darkGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(
+                  _image!,
+                  width: double.infinity,
+                  height: 300,
+                  fit: BoxFit.cover,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildInputField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _captionController,
+            maxLines: 4,
+            decoration: InputDecoration(
+              labelText: 'Write a caption...',
+              labelStyle: const TextStyle(color: AppColors.darkGrey),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _taggedUsersController,
+            decoration: InputDecoration(
+              labelText: 'Tag people',
+              prefixIcon: const Icon(Icons.person_outline, size: 20, color: AppColors.darkGrey),
+              labelStyle: const TextStyle(color: AppColors.darkGrey),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMusicSelector() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Add Music (Optional)',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: AppColors.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () async {
+              final music = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TrendingMusicScreen(),
+                ),
+              );
+              if (music != null) {
+                setState(() {
+                  _selectedMusic = music;
+                });
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.music_note,
+                      size: 20,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _selectedMusic ?? 'Select a song',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: _selectedMusic != null ? AppColors.onSurface : AppColors.darkGrey,
+                        fontWeight: _selectedMusic != null ? FontWeight.w500 : FontWeight.normal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: AppColors.darkGrey,
                   ),
                 ],
               ),
             ),
-            // Floating Post Button
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: ElevatedButton(
-                onPressed: postProvider.isLoading || _image == null
-                    ? null
-                    : () async {
-                        try {
-                          await postProvider.createPost(
-                            caption: _captionController.text,
-                            image: _image!,
-                          );
-                          if (mounted) {
-                            context.pop();
-                          }
-                        } catch (error) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Failed to create post: ${error.toString()}')),
-                            );
-                          }
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: postProvider.isLoading
-                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white))
-                    : const Text('Post', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostButton(PostProvider postProvider) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
             ),
           ],
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _image == null
+                ? null
+                : () async {
+                    if (_image != null) {
+                      await postProvider.createPost(
+                        image: _image!,
+                        caption: _captionController.text.trim(),
+                      );
+                      if (mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+              shadowColor: Colors.transparent,
+            ),
+            child: postProvider.isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text(
+                    'Post',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildOptionRow(BuildContext context, {required IconData icon, required String label, bool isFirst = false, bool isLast = false, VoidCallback? onTap}) {
-    final theme = Theme.of(context);
-    final borderRadius = isFirst
-        ? const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))
-        : isLast
-            ? const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12))
-            : BorderRadius.zero;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: borderRadius,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Row(
+  @override
+  Widget build(BuildContext context) {
+    final postProvider = Provider.of<PostProvider>(context);
+    
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Stack(
           children: [
-            Icon(icon, size: 24),
-            const SizedBox(width: 16),
-            Text(label, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
-            const Spacer(),
-            Icon(Icons.chevron_right, color: theme.dividerColor),
+            SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 16),
+                  _buildImagePicker(),
+                  _buildInputField(),
+                  _buildMusicSelector(),
+                  const SizedBox(height: 100), // Space for the post button
+                ],
+              ),
+            ),
+            _buildPostButton(postProvider),
           ],
         ),
       ),
