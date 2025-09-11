@@ -36,7 +36,7 @@ class ProfileScreen extends StatelessWidget {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(user.username),
+              title: Text(user.username ?? 'Profile'),
             ),
             body: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -92,7 +92,7 @@ class ProfileHeader extends StatelessWidget {
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildStatColumn('Posts', user.posts.length),
                         _buildStatColumn('Followers', user.followers.length),
@@ -114,10 +114,12 @@ class ProfileHeader extends StatelessWidget {
                     else
                       ElevatedButton(
                         onPressed: () {
-                          if (isFollowing) {
-                            userProvider.unfollowUser(user.id);
-                          } else {
-                            userProvider.followUser(user.id);
+                          if (user.id != null) {
+                            if (isFollowing) {
+                              userProvider.unfollowUser(user.id!);
+                            } else {
+                              userProvider.followUser(user.id!);
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(

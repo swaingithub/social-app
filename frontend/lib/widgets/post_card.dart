@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:jivvi/features/post/models/post.dart';
@@ -13,8 +14,9 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final postProvider = Provider.of<PostProvider>(context);
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
     final isLiked = userId != null && post.isLikedBy(userId!);
+    final profileImageUrl = post.author.profileImageUrl ?? 'https://via.placeholder.com/150';
 
     void goToComments() {
       Navigator.of(context).push(
@@ -27,7 +29,7 @@ class PostCard extends StatelessWidget {
     void goToProfile() {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ProfileScreen(userId: post.author.id),
+          builder: (context) => ProfileScreen(userId: post.author.id ?? ''),
         ),
       );
     }
@@ -48,7 +50,7 @@ class PostCard extends StatelessWidget {
                   onTap: goToProfile,
                   child: CircleAvatar(
                     radius: 20,
-                    backgroundImage: NetworkImage(post.author.profileImageUrl ?? 'https://via.placeholder.com/150'),
+                    backgroundImage: NetworkImage(profileImageUrl),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -80,12 +82,29 @@ class PostCard extends StatelessWidget {
           // Post Image
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Image.network(
-              post.mediaUrl, // Using mediaUrl
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 300, // Or some other fixed height
-            ),
+            child: post.mediaUrl.isNotEmpty
+              ? Image.network(
+                  post.mediaUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 300,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 300,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.error_outline, color: Colors.grey),
+                  ),
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                )
+              : Container(
+                  height: 300,
+                  color: Colors.grey[200],
+                  child: const Center(child: Icon(Icons.image_not_supported)),
+                ),
           ),
 
           // Post Actions (Like, Comment, etc.)
@@ -104,7 +123,7 @@ class PostCard extends StatelessWidget {
                       ),
                       onPressed: () {
                         if (userId != null) {
-                          postProvider.toggleLike(post.id);
+                          postProvider.toggleLike(post.id, userId!);
                         }
                       },
                     ),
@@ -140,18 +159,18 @@ class PostCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: RichText(
               text: TextSpan(
-                style: DefaultTextStyle.of(context).style,
-                children: <TextSpan>[
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: goToProfile,
-                      child: Text(
-                        '${post.author.username} ',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                children: [
+                  TextSpan(
+                    text: '${post.author.username} ',
+                    style: DefaultTextStyle.of(context).style.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                    recognizer: TapGestureRecognizer()..onTap = goToProfile,
                   ),
-                  TextSpan(text: post.caption),
+                  TextSpan(
+                    text: post.caption,
+                    style: DefaultTextStyle.of(context).style,
+                  ),
                 ],
               ),
             ),
@@ -163,7 +182,7 @@ class PostCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                'View all ${post.comments.length} comments',
+                'View all ${post.comments.length} ${post.comments.length == 1 ? 'comment' : 'comments'}',
                 style: const TextStyle(color: Colors.grey),
               ),
             ),

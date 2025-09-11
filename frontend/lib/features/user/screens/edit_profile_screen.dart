@@ -25,7 +25,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     _usernameController = TextEditingController(text: widget.user.username);
-    _fullNameController = TextEditingController(text: widget.user.fullName);
+    _fullNameController = TextEditingController(text: widget.user.fullName ?? '');
     _bioController = TextEditingController(text: widget.user.bio);
     _locationController = TextEditingController(text: widget.user.location);
     _websiteController = TextEditingController(text: widget.user.website);

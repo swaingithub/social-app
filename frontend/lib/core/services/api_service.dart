@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jivvi/features/post/models/comment.dart' as comment_model;
 import 'package:jivvi/features/post/models/post.dart';
 import 'package:jivvi/features/auth/models/user.dart';
+import 'package:jivvi/features/news/models/article.dart';
 
 class ApiService {
   late final String baseUrl;
@@ -40,6 +41,32 @@ class ApiService {
   Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+  }
+
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  Future<List<Article>> fetchNews() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/news'),
+        headers: await _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((item) => Article.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to load news: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching news: $e');
+    }
   }
 
   Future<String> uploadImage(File image) async {

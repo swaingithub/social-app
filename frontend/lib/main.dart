@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
+import 'package:jivvi/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:jivvi/features/post/providers/post_provider.dart';
-import 'package:jivvi/providers/user_provider.dart';
 import 'package:jivvi/core/routing/app_router.dart';
 import 'package:jivvi/core/services/api_service.dart';
 import 'package:jivvi/theme/theme_provider.dart';
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => PostProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider(ApiService())),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, __) {

@@ -10,11 +10,18 @@ class CommentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void goToProfile() {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ProfileScreen(userId: comment.author.id),
-        ),
-      );
+      if (comment.author.id != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ProfileScreen(userId: comment.author.id ?? ''),
+          ),
+        );
+      } else {
+        // Optionally show an error message or handle the null case
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not load profile')),
+        );
+      }
     }
 
     return Card(
@@ -55,7 +62,7 @@ class CommentCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    comment.timeAgo,
+                    comment.createdAt.toLocal().toString(), // Assuming createdAt is a DateTime
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                 ],

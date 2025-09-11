@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jivvi/models/article.dart';
 import 'package:jivvi/widgets/news_article_card.dart';
+import 'package:jivvi/features/news/models/article.dart';
 
 class NewsArticleListItem extends StatefulWidget {
   final Article article;

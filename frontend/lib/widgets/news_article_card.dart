@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jivvi/models/article.dart';
+import 'package:jivvi/features/news/models/article.dart';
 import 'package:jivvi/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -68,7 +68,7 @@ class NewsArticleCard extends StatelessWidget {
                   // Source and Date
                   Row(
                     children: [
-                      if (article.source?.name != null)
+                      if (article.source != null && article.source!.isNotEmpty)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -79,7 +79,7 @@ class NewsArticleCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            article.source!.name!,
+                            article.source!,
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,

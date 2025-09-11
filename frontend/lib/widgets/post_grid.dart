@@ -17,8 +17,8 @@ class PostGrid extends StatelessWidget {
       itemCount: posts.length,
       itemBuilder: (context, index) {
         final post = posts[index];
-        return Image.network(
-          post.thumbnailUrl ?? post.mediaUrl,
+        return Image.network( 
+          post.mediaUrl,
           fit: BoxFit.cover,
         );
       },

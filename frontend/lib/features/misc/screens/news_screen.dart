@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jivvi/core/services/api_service.dart';
 import 'package:jivvi/features/news/models/article.dart';
 import 'package:jivvi/widgets/news_article_card.dart';
-import 'package:jivvi/widgets/news_article_card_placeholder.dart';
+import 'package:jivvi/widgets/news_article_list_item.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -18,7 +18,7 @@ class _NewsScreenState extends State<NewsScreen> {
   @override
   void initState() {
     super.initState();
-    _newsFuture = _apiService.getNews();
+    _newsFuture = _apiService.fetchNews();
   }
 
   @override
@@ -27,9 +27,8 @@ class _NewsScreenState extends State<NewsScreen> {
       future: _newsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => const NewsArticleCardPlaceholder(),
+          return const Center(
+            child: CircularProgressIndicator(),
           );
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: \${snapshot.error}'));
@@ -39,8 +38,8 @@ class _NewsScreenState extends State<NewsScreen> {
           final articles = snapshot.data!;
           return ListView.builder(
             itemCount: articles.length,
-            itemBuilder: (context, index) {
-              return NewsArticleCard(article: articles[index]);
+            itemBuilder: (context, index) { 
+              return NewsArticleListItem(article: articles[index]);
             },
           );
         }
