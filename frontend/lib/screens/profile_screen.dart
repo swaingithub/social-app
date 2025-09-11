@@ -16,18 +16,42 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
-  late final Future<User> _userFuture;
+  late Future<User> _userFuture;
   late Future<List<Post>> _postsFuture;
   final ApiService _apiService = ApiService();
   late TabController _tabController;
 
+  Future<void> _loadUserData() async {
+    try {
+      final user = widget.userId != null 
+          ? await _apiService.getUser(widget.userId!) 
+          : await _apiService.getMe();
+      
+      if (mounted) {
+        setState(() {
+          _userFuture = Future.value(user);
+          _postsFuture = _apiService.getPostsByUser(user.id);
+        });
+      }
+    } catch (e) {
+      // Keep the future in error state to show error UI
+      _userFuture = Future.error(e);
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _userFuture = widget.userId != null ? _apiService.getUser(widget.userId!) : _apiService.getMe();
-    _postsFuture = _userFuture.then((user) => _apiService.getPostsByUser(user.id));
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabSelection);
+    
+    // Initialize futures in initState
+    _userFuture = widget.userId != null
+        ? _apiService.getUser(widget.userId!)
+        : _apiService.getMe();
+        
+    _postsFuture = _userFuture.then((user) => _apiService.getPostsByUser(user.id));
   }
 
   void _handleTabSelection() {
@@ -67,14 +91,85 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           if (snapshot.connectionState == ConnectionState.waiting) {
             return _buildShimmerLoading();
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.black)),
-            );
+            return _buildErrorView(snapshot.error.toString());
+          } else if (snapshot.hasData) {
+            return _buildProfileView(snapshot.data!, Theme.of(context));
           } else {
-            final user = snapshot.data!;
-            return _buildProfileView(user, Theme.of(context));
+            return _buildErrorView('No user data available');
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildErrorView(String error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load profile',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error.contains('401') 
+                ? 'Please log in to view this profile'
+                : 'An error occurred while loading the profile',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _loadUserData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Text(
+                'Retry',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            if (error.contains('401'))
+              TextButton(
+                onPressed: () {
+                  // Navigate to login screen
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: const Text(
+                  'Go to Login',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

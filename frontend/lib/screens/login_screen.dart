@@ -15,9 +15,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -113,21 +116,61 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildEmailField(theme),
-          const SizedBox(height: 20),
-          _buildPasswordField(theme),
-          const SizedBox(height: 8),
-          _buildForgotPassword(theme),
-          const SizedBox(height: 24),
-          _buildLoginButton(theme, userProvider),
-          const SizedBox(height: 20),
-          _buildDivider(),
-          const SizedBox(height: 20),
-          _buildSocialLoginButtons(),
-        ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_errorMessage != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red[700]),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: Colors.red[700],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.red[700]),
+                      onPressed: () {
+                        setState(() {
+                          _errorMessage = null;
+                        });
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      iconSize: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            _buildEmailField(theme),
+            const SizedBox(height: 20),
+            _buildPasswordField(theme),
+            const SizedBox(height: 8),
+            _buildForgotPassword(theme),
+            const SizedBox(height: 24),
+            _buildLoginButton(theme, userProvider),
+            const SizedBox(height: 20),
+            _buildDivider(),
+            const SizedBox(height: 20),
+            _buildSocialLoginButtons(),
+          ],
+        ),
       ),
     )
         .animate()
@@ -141,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildEmailField(ThemeData theme) {
-    return TextField(
+    return TextFormField(
       controller: _emailController,
       style: GoogleFonts.poppins(
         fontSize: 15,
@@ -155,11 +198,27 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       keyboardType: TextInputType.emailAddress,
       cursorColor: theme.primaryColor,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your email';
+        }
+        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
+          return 'Please enter a valid email address';
+        }
+        return null;
+      },
+      onChanged: (_) {
+        if (_errorMessage != null) {
+          setState(() {
+            _errorMessage = null;
+          });
+        }
+      },
     );
   }
 
   Widget _buildPasswordField(ThemeData theme) {
-    return TextField(
+    return TextFormField(
       controller: _passwordController,
       style: GoogleFonts.poppins(
         fontSize: 15,
@@ -186,6 +245,22 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       obscureText: !_isPasswordVisible,
       cursorColor: theme.primaryColor,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your password';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters';
+        }
+        return null;
+      },
+      onChanged: (_) {
+        if (_errorMessage != null) {
+          setState(() {
+            _errorMessage = null;
+          });
+        }
+      },
     );
   }
 
@@ -242,55 +317,68 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _handleLogin(UserProvider userProvider) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await userProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      
+      // After successful login, get the user data
+      await userProvider.getMe();
+      
+      if (mounted) {
+        // Navigate to home screen on successful login
+        context.go('/home');
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   Widget _buildLoginButton(ThemeData theme, UserProvider userProvider) {
     return ElevatedButton(
-      onPressed: userProvider.isLoading
-          ? null
-          : () async {
-              try {
-                await userProvider.login(
-                  _emailController.text,
-                  _passwordController.text,
-                );
-                if (context.mounted) {
-                  GoRouter.of(context).go('/');
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString().replaceAll('Exception: ', '')),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
+      onPressed: _isLoading ? null : () => _handleLogin(userProvider),
       style: ElevatedButton.styleFrom(
         backgroundColor: theme.primaryColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 18),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
         ),
-        elevation: 5,
-        shadowColor: theme.primaryColor.withOpacity(0.4),
+        elevation: 0,
       ),
-      child: userProvider.isLoading
+      child: _isLoading
           ? const SizedBox(
-              height: 20,
-              width: 20,
+              width: 24,
+              height: 24,
               child: CircularProgressIndicator(
+                color: Colors.white,
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             )
           : Text(
-              'Sign In',
+              'Login',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
+                color: Colors.white,
               ),
             ),
     );
