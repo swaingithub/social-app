@@ -1,6 +1,4 @@
-
 const User = require('../models/user');
-const Relationship = require('../models/relationship');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -8,7 +6,7 @@ exports.register = async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    let user = await User.findOne({ where: { email } });
+    let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
     }
@@ -16,11 +14,13 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    user = await User.create({
+    user = new User({
       username,
       email,
       password: hashedPassword,
     });
+
+    await user.save();
 
     const payload = {
       user: {
@@ -47,7 +47,7 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ where: { email } });
+    let user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
@@ -80,77 +80,49 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ msg: 'No user ID in token' });
-    }
-    
-    const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ['password'] },
-    });
-    
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
-    }
-    
-    res.json({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      profileImageUrl: user.profileImageUrl,
-      bio: user.bio,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
-    });
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
   } catch (err) {
-    console.error('Error in getMe:', err);
-    res.status(500).json({ 
-      msg: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+    console.error(err.message);
+    res.status(500).send('Server error');
   }
 };
 
 exports.getUserById = async (req, res) => {
     try {
-        const user = await User.findByPk(req.params.id, {
-            attributes: { exclude: ['password'] },
-        });
+        const user = await User.findById(req.params.id).select('-password');
 
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        res.json({
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            profileImageUrl: user.profileImageUrl,
-            bio: user.bio,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-        });
+        res.json(user);
     } catch (err) {
-        console.error('Error in getUserById:', err);
-        res.status(500).json({ 
-            msg: 'Server error',
-            error: process.env.NODE_ENV === 'development' ? err.message : undefined
-        });
+        console.error(err.message);
+        res.status(500).send('Server error');
     }
 };
 
 exports.followUser = async (req, res) => {
   try {
-    const followerId = req.user.id;
-    const followingId = req.params.id;
+    const userToFollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user.id);
 
-    if (followerId === followingId) {
-      return res.status(400).json({ msg: 'You cannot follow yourself' });
+    if (!userToFollow || !currentUser) {
+      return res.status(404).json({ msg: 'User not found' });
     }
 
-    const relationship = await Relationship.create({ followerId, followingId });
+    if (currentUser.following.includes(userToFollow.id)) {
+      return res.status(400).json({ msg: 'You are already following this user' });
+    }
 
-    res.json(relationship);
+    currentUser.following.push(userToFollow.id);
+    userToFollow.followers.push(currentUser.id);
+
+    await currentUser.save();
+    await userToFollow.save();
+
+    res.json({ msg: 'User followed' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -159,16 +131,26 @@ exports.followUser = async (req, res) => {
 
 exports.unfollowUser = async (req, res) => {
   try {
-    const followerId = req.user.id;
-    const followingId = req.params.id;
+    const userToUnfollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user.id);
 
-    const result = await Relationship.destroy({
-      where: { followerId, followingId },
-    });
+    if (!userToUnfollow || !currentUser) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
 
-    if (result === 0) {
+    if (!currentUser.following.includes(userToUnfollow.id)) {
       return res.status(400).json({ msg: 'You are not following this user' });
     }
+
+    currentUser.following = currentUser.following.filter(
+      (id) => id.toString() !== userToUnfollow.id.toString()
+    );
+    userToUnfollow.followers = userToUnfollow.followers.filter(
+      (id) => id.toString() !== currentUser.id.toString()
+    );
+
+    await currentUser.save();
+    await userToUnfollow.save();
 
     res.json({ msg: 'User unfollowed' });
   } catch (err) {
@@ -179,20 +161,15 @@ exports.unfollowUser = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: req.body },
+      { new: true }
+    ).select('-password');
 
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
-
-    const { username, bio, location, profileImageUrl } = req.body;
-
-    user.username = username ?? user.username;
-    user.bio = bio ?? user.bio;
-    user.location = location ?? user.location;
-    user.profileImageUrl = profileImageUrl ?? user.profileImageUrl;
-
-    await user.save();
 
     res.json(user);
   } catch (err) {
