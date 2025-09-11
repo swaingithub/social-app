@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:jivvi/providers/post_provider.dart';
+import 'package:jivvi/features/post/providers/post_provider.dart';
 import 'package:jivvi/widgets/post_card.dart';
-
-import '../widgets/post_placeholder.dart';
+import 'package:jivvi/widgets/post_placeholder.dart';
+import 'package:jivvi/providers/user_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -41,7 +44,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withAlpha(38),
               blurRadius: 30,
               spreadRadius: 2,
               offset: const Offset(0, 10),
@@ -55,7 +58,7 @@ class HomeScreen extends StatelessWidget {
             }
             return RefreshIndicator(
               onRefresh: () => postProvider.fetchPosts(),
-              child: _buildPostListView(postProvider),
+              child: _buildPostListView(postProvider, user?.id),
             );
           },
         ),
@@ -73,7 +76,7 @@ class HomeScreen extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).primaryColor.withOpacity(0.3),
+              color: Theme.of(context).primaryColor.withAlpha(76),
               blurRadius: 12,
               spreadRadius: 2,
               offset: const Offset(0, 4),
@@ -92,7 +95,7 @@ class HomeScreen extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   Theme.of(context).primaryColor,
-                  Theme.of(context).primaryColor.withOpacity(0.8),
+                  Theme.of(context).primaryColor.withAlpha(204),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -107,7 +110,6 @@ class HomeScreen extends StatelessWidget {
         ),
       ).animate(
         delay: 1.seconds,
-        onPlay: (controller) => controller.repeat(reverse: true),
       ).scale(
         begin: const Offset(0.9, 0.9),
         end: const Offset(1.0, 1.0),
@@ -117,7 +119,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPostListView(PostProvider postProvider) {
+  Widget _buildPostListView(PostProvider postProvider, String? userId) {
     if (postProvider.posts.isEmpty && !postProvider.isLoading) {
       return const Center(child: Text('No posts yet. Be the first to post!'));
     }
@@ -125,15 +127,15 @@ class HomeScreen extends StatelessWidget {
       itemCount: postProvider.posts.length,
       itemBuilder: (context, index) {
         final post = postProvider.posts[index];
-        return PostCard(post: post);
+        return PostCard(post: post, userId: userId);
       },
     );
   }
 
   Widget _buildPostPlaceholders(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Theme.of(context).colorScheme.surface.withOpacity(0.5),
-      highlightColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+      baseColor: Theme.of(context).colorScheme.surface.withAlpha(128),
+      highlightColor: Theme.of(context).colorScheme.surface.withAlpha(204),
       child: ListView.builder(
         itemCount: 5,
         itemBuilder: (context, index) => const PostPlaceholder(),

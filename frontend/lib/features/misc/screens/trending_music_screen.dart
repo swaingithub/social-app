@@ -63,13 +63,13 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
         setState(() {
           _isLoading = false;
         });
-        print('Failed to load trending music');
+        // print('Failed to load trending music');
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      print('Error fetching trending music: $e');
+      // print('Error fetching trending music: $e');
     }
   }
 
@@ -90,13 +90,13 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
         setState(() {
           _isLoading = false;
         });
-        print('Failed to load music');
+        // print('Failed to load music');
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      print('Error searching music: $e');
+      // print('Error searching music: $e');
     }
   }
 

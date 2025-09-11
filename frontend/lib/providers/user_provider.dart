@@ -1,7 +1,6 @@
-
 import 'package:flutter/material.dart';
-import 'package:jivvi/models/user.dart';
-import 'package:jivvi/services/api_service.dart';
+import 'package:jivvi/features/auth/models/user.dart';
+import 'package:jivvi/core/services/api_service.dart';
 
 class UserProvider with ChangeNotifier {
   final ApiService apiService;
@@ -69,6 +68,52 @@ class UserProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> updateProfile({
+    String? username,
+    String? fullName,
+    String? bio,
+    String? location,
+    String? website,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final updatedUser = await apiService.updateProfile(
+        username: username,
+        fullName: fullName,
+        bio: bio,
+        location: location,
+        website: website,
+      );
+      _user = updatedUser;
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> followUser(String userId) async {
+    try {
+      await apiService.follow(userId);
+      _user = await apiService.getMe(); // Refresh user data
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> unfollowUser(String userId) async {
+    try {
+      await apiService.unfollow(userId);
+      _user = await apiService.getMe(); // Refresh user data
+      notifyListeners();
+    } catch (e) {
+      rethrow;
     }
   }
 }

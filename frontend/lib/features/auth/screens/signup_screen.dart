@@ -108,7 +108,7 @@ class _SignupScreenState extends State<SignupScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(25),
             blurRadius: 30,
             spreadRadius: 5,
             offset: const Offset(0, 10),
@@ -240,18 +240,16 @@ class _SignupScreenState extends State<SignupScreen> {
                   _passwordController.text,
                 );
                 
-                if (context.mounted) {
-                  GoRouter.of(context).go('/');
-                }
+                if (!mounted) return;
+                context.go('/');
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString().replaceAll('Exception: ', '')),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString().replaceAll('Exception: ', '')),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
       style: ElevatedButton.styleFrom(
@@ -262,7 +260,7 @@ class _SignupScreenState extends State<SignupScreen> {
           borderRadius: BorderRadius.circular(14),
         ),
         elevation: 5,
-        shadowColor: theme.primaryColor.withOpacity(0.4),
+        shadowColor: theme.primaryColor.withAlpha(102),
       ),
       child: Consumer<UserProvider>(
         builder: (context, userProvider, _) {

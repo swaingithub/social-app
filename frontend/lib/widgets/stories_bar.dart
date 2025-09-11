@@ -13,17 +13,17 @@ class StoriesBar extends StatelessWidget {
         itemCount: 10,
         itemBuilder: (context, index) {
           if (index == 0) {
-            return const _YourStoryAvatar();
+            return const YourStoryAvatar();
           }
-          return _StoryAvatar(index: index);
+          return StoryAvatar(index: index);
         },
       ),
     );
   }
 }
 
-class _StoryAvatar extends StatelessWidget {
-  const _StoryAvatar({required this.index});
+class StoryAvatar extends StatelessWidget {
+  const StoryAvatar({super.key, required this.index});
 
   final int index;
 
@@ -40,15 +40,15 @@ class _StoryAvatar extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  Theme.of(context).colorScheme.primary.withOpacity(0.7),
-                  Theme.of(context).colorScheme.secondary.withOpacity(0.7),
+                  Theme.of(context).colorScheme.primary.withAlpha(178),
+                  Theme.of(context).colorScheme.secondary.withAlpha(178),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(76),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -98,8 +98,8 @@ class _StoryAvatar extends StatelessWidget {
   }
 }
 
-class _YourStoryAvatar extends StatelessWidget {
-  const _YourStoryAvatar();
+class YourStoryAvatar extends StatelessWidget {
+  const YourStoryAvatar({super.key});
 
   @override
   Widget build(BuildContext context) {

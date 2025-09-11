@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jivvi/models/post.dart';
-import 'package:jivvi/models/user.dart';
+import 'package:jivvi/features/post/models/post.dart';
+import 'package:jivvi/features/auth/models/user.dart';
 import 'package:jivvi/providers/user_provider.dart';
-import 'package:jivvi/screens/add_post_screen.dart';
-import 'package:jivvi/screens/comments_screen.dart';
-import 'package:jivvi/screens/edit_profile_screen.dart';
-import 'package:jivvi/screens/explore_screen.dart';
-import 'package:jivvi/screens/home_screen.dart';
-import 'package:jivvi/screens/login_screen.dart';
-import 'package:jivvi/screens/news_screen.dart';
-import 'package:jivvi/screens/profile_screen.dart';
-import 'package:jivvi/screens/root_screen.dart';
-import 'package:jivvi/screens/signup_screen.dart';
-import 'package:jivvi/screens/splash_screen.dart';
-import 'package:jivvi/screens/stories_screen.dart';
+import 'package:jivvi/features/post/screens/add_post_screen.dart';
+import 'package:jivvi/features/post/screens/comments_screen.dart';
+import 'package:jivvi/features/user/screens/edit_profile_screen.dart';
+import 'package:jivvi/features/misc/screens/explore_screen.dart';
+import 'package:jivvi/features/home/screens/home_screen.dart';
+import 'package:jivvi/features/auth/screens/login_screen.dart';
+import 'package:jivvi/features/user/screens/profile_screen.dart';
+import 'package:jivvi/features/misc/screens/root_screen.dart';
+import 'package:jivvi/features/auth/screens/signup_screen.dart';
+import 'package:jivvi/features/auth/screens/splash_screen.dart';
+import 'package:jivvi/features/misc/screens/stories_screen.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -53,10 +52,6 @@ class AppRouter {
             builder: (context, state) => const StoriesScreen(),
           ),
           GoRoute(
-            path: '/news',
-            builder: (context, state) => const NewsScreen(),
-          ),
-          GoRoute(
             path: '/explore',
             builder: (context, state) => const ExploreScreen(),
           ),
@@ -66,7 +61,7 @@ class AppRouter {
           ),
           GoRoute(
             path: '/profile',
-            builder: (context, state) => const ProfileScreen(),
+            builder: (context, state) => ProfileScreen(userId: state.extra as String),
           ),
           GoRoute(
             path: '/comments',

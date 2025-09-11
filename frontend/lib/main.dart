@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:jivvi/providers/post_provider.dart';
+import 'package:jivvi/features/post/providers/post_provider.dart';
 import 'package:jivvi/providers/user_provider.dart';
-import 'package:jivvi/routing/app_router.dart';
-import 'package:jivvi/services/api_service.dart';
+import 'package:jivvi/core/routing/app_router.dart';
+import 'package:jivvi/core/services/api_service.dart';
 import 'package:jivvi/theme/theme_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -18,12 +18,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ApiService apiService = ApiService();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => PostProvider(apiService)),
-        ChangeNotifierProvider(create: (_) => UserProvider(apiService)),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, __) {

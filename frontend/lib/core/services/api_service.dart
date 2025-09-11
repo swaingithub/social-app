@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jivvi/models/comment.dart' as comment_model;
-import 'package:jivvi/models/post.dart';
-import 'package:jivvi/models/user.dart';
+import 'package:jivvi/features/post/models/comment.dart' as comment_model;
+import 'package:jivvi/features/post/models/post.dart';
+import 'package:jivvi/features/auth/models/user.dart';
 
 class ApiService {
   late final String baseUrl;
@@ -40,6 +40,30 @@ class ApiService {
   Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+  }
+
+  Future<String> uploadImage(File image) async {
+    final token = await _getToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('Authentication required. Please log in.');
+    }
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/files/upload'),
+    );
+    request.headers['x-auth-token'] = token;
+    request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody);
+      return data['mediaUrl'];
+    } else {
+      throw Exception('Failed to upload image');
+    }
   }
 
   Future<void> register(String username, String email, String password) async {
@@ -84,17 +108,17 @@ class ApiService {
 
   Future<User> getMe() async {
     try {
-      print('Getting authentication token...');
+      // print('Getting authentication token...');
       final token = await _getToken();
-      print('Token: ${token != null ? 'Token exists' : 'Token is null'}');
+      // print('Token: ${token != null ? 'Token exists' : 'Token is null'}');
       
       if (token == null || token.isEmpty) {
-        print('No authentication token found');
+        // print('No authentication token found');
         throw Exception('Not authenticated. Please log in again.');
       }
 
       final url = Uri.parse('$baseUrl/users/me');
-      print('Making request to: $url');
+      // print('Making request to: $url');
       
       try {
         final response = await http.get(
@@ -111,8 +135,8 @@ class ApiService {
           ),
         );
 
-        print('Response status: ${response.statusCode}');
-        print('Response headers: ${response.headers}');
+        // print('Response status: ${response.statusCode}');
+        // print('Response headers: ${response.headers}');
         
         // Handle empty response body
         if (response.body.isEmpty) {
@@ -122,9 +146,9 @@ class ApiService {
         dynamic responseBody;
         try {
           responseBody = jsonDecode(response.body);
-          print('Parsed response body: $responseBody');
+          // print('Parsed response body: $responseBody');
         } catch (e) {
-          print('Failed to parse response body: ${response.body}');
+          // print('Failed to parse response body: ${response.body}');
           throw Exception('Invalid server response format');
         }
         
@@ -135,9 +159,9 @@ class ApiService {
                 return User.fromJson(responseBody['data']);
               } else {
                 final errorMsg = responseBody['msg'] ?? 'Invalid response format';
-                print('API Error: $errorMsg');
+                // print('API Error: $errorMsg');
                 if (responseBody['error'] != null) {
-                  print('Additional error info: ${responseBody['error']}');
+                  // print('Additional error info: ${responseBody['error']}');
                 }
                 throw Exception(errorMsg);
               }
@@ -145,11 +169,11 @@ class ApiService {
               throw Exception('Unexpected response format');
             }
           } catch (e) {
-            print('Error parsing user data: $e');
+            // print('Error parsing user data: $e');
             throw Exception('Failed to parse user data: $e');
           }
         } else if (response.statusCode == 401) {
-          print('Authentication failed - invalid or expired token');
+          // print('Authentication failed - invalid or expired token');
           await clearToken();
           throw Exception(responseBody is Map 
               ? responseBody['msg'] ?? 'Session expired. Please log in again.'
@@ -158,25 +182,25 @@ class ApiService {
           final errorMsg = responseBody is Map 
               ? responseBody['msg'] ?? 'Failed to get user (Status: ${response.statusCode})'
               : 'Failed to get user (Status: ${response.statusCode})';
-          print('Server error: $errorMsg');
+          // print('Server error: $errorMsg');
           throw Exception(errorMsg);
         }
       } on http.ClientException catch (e) {
         if (e.message.contains('timed out')) {
-          print('Request timed out');
+          // print('Request timed out');
           throw Exception('Request timed out. Please check your connection and try again.');
         }
-        print('HTTP Client Exception: $e');
+        // print('HTTP Client Exception: $e');
         throw Exception('Network error: ${e.message}');
       } on FormatException catch (e) {
-        print('Format Exception: $e');
+        // print('Format Exception: $e');
         throw Exception('Invalid server response format');
       } catch (e) {
-        print('Unexpected error in getMe: $e');
+        // print('Unexpected error in getMe: $e');
         throw Exception('An unexpected error occurred. Please try again.');
       }
     } catch (e) {
-      print('Exception in getMe: $e');
+      // print('Exception in getMe: $e');
       rethrow;
     }
   }
@@ -228,8 +252,8 @@ class ApiService {
         }),
       );
 
-      print('Create post response: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Create post response: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
 
@@ -249,7 +273,7 @@ class ApiService {
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in createPost: $e');
+      // print('Exception in createPost: $e');
       rethrow;
     }
   }
@@ -262,7 +286,7 @@ class ApiService {
         throw Exception('Authentication required. Please log in.');
       }
 
-      final response = await http.post(
+      final response = await http.put(
         Uri.parse('$baseUrl/posts/like/$postId'),
         headers: {
           'Content-Type': 'application/json',
@@ -270,8 +294,8 @@ class ApiService {
         },
       );
 
-      print('Like post response: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Like post response: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
 
@@ -293,7 +317,7 @@ class ApiService {
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in likePost: $e');
+      // print('Exception in likePost: $e');
       rethrow;
     }
   }
@@ -302,8 +326,8 @@ class ApiService {
   Future<Post?> unlikePost(String postId) async {
     try {
       final token = await _getToken();
-      final response = await http.post(
-        Uri.parse('$baseUrl/posts/$postId/unlike'),
+      final response = await http.put(
+        Uri.parse('$baseUrl/posts/unlike/$postId'),
         headers: {
           'Content-Type': 'application/json',
           'x-auth-token': token ?? '',
@@ -315,7 +339,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('Error unliking post: $e');
+      // print('Error unliking post: $e');
       return null;
     }
   }
@@ -335,8 +359,8 @@ class ApiService {
         },
       );
 
-      print('Toggle like response: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Toggle like response: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
 
@@ -358,18 +382,18 @@ class ApiService {
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in toggleLike: $e');
+      // print('Exception in toggleLike: $e');
       rethrow;
     }
   }
 
   Future<User> getUser(String userId) async {
     try {
-      print('Fetching user with ID: $userId');
-      print('Making request to: $baseUrl/users/$userId');
+      // print('Fetching user with ID: $userId');
+      // print('Making request to: $baseUrl/users/$userId');
       
       final token = await _getToken();
-      print('Using token: ${token != null ? 'Token exists' : 'No token'}');
+      // print('Using token: ${token != null ? 'Token exists' : 'No token'}');
       
       final response = await http.get(
         Uri.parse('$baseUrl/users/$userId'),
@@ -379,8 +403,8 @@ class ApiService {
         },
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
       
@@ -392,16 +416,16 @@ class ApiService {
             throw Exception(responseBody['msg'] ?? 'Invalid response format');
           }
         } catch (e) {
-          print('Error parsing user data: $e');
+          // print('Error parsing user data: $e');
           throw Exception('Failed to parse user data: $e');
         }
       } else if (response.statusCode == 401) {
-        print('Authentication required');
+        // print('Authentication required');
         throw Exception(responseBody is Map 
             ? responseBody['msg'] ?? 'Authentication required. Please log in.'
             : 'Authentication required. Please log in.');
       } else if (response.statusCode == 404) {
-        print('User not found');
+        // print('User not found');
         throw Exception(responseBody is Map 
             ? responseBody['msg'] ?? 'User not found'
             : 'User not found');
@@ -409,11 +433,11 @@ class ApiService {
         final errorMsg = responseBody is Map 
             ? responseBody['msg'] ?? 'Failed to load user'
             : 'Failed to load user';
-        print('Server error: $errorMsg');
+        // print('Server error: $errorMsg');
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in getUser: $e');
+      // print('Exception in getUser: $e');
       rethrow;
     }
   }
@@ -430,8 +454,8 @@ class ApiService {
         },
       );
 
-      print('Get comments response: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Get comments response: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
       
@@ -454,7 +478,7 @@ class ApiService {
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in getComments: $e');
+      // print('Exception in getComments: $e');
       rethrow;
     }
   }
@@ -484,8 +508,8 @@ class ApiService {
         body: jsonEncode(body),
       );
 
-      print('Add comment response: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Add comment response: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
 
@@ -507,14 +531,14 @@ class ApiService {
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in addComment: $e');
+      // print('Exception in addComment: $e');
       rethrow;
     }
   }
 
   Future<List<Post>> getPostsByUser(String userId) async {
     try {
-      print('Fetching posts for user ID: $userId');
+      // print('Fetching posts for user ID: $userId');
       final token = await _getToken();
       
       if (token == null || token.isEmpty) {
@@ -529,8 +553,8 @@ class ApiService {
         },
       );
 
-      print('Posts response status: ${response.statusCode}');
-      print('Posts response body: ${response.body}');
+      // print('Posts response status: ${response.statusCode}');
+      // print('Posts response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
       
@@ -542,21 +566,21 @@ class ApiService {
           throw Exception(responseBody['msg'] ?? 'Invalid response format');
         }
       } else if (response.statusCode == 401) {
-        print('Authentication failed - invalid or expired token');
+        // print('Authentication failed - invalid or expired token');
         await clearToken();
         throw Exception('Session expired. Please log in again.');
       } else if (response.statusCode == 404) {
-        print('No posts found for user');
+        // print('No posts found for user');
         return [];
       } else {
         final errorMsg = responseBody is Map 
             ? responseBody['msg'] ?? 'Failed to load posts'
             : 'Failed to load posts';
-        print('Server error: $errorMsg');
+        // print('Server error: $errorMsg');
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in getPostsByUser: $e');
+      // print('Exception in getPostsByUser: $e');
       rethrow;
     }
   }
@@ -586,7 +610,7 @@ class ApiService {
       if (profileImageUrl != null) updateData['profileImageUrl'] = profileImageUrl;
       if (isPrivate != null) updateData['isPrivate'] = isPrivate;
 
-      print('Updating profile with data: $updateData');
+      // print('Updating profile with data: $updateData');
       
       final response = await http.put(
         Uri.parse('$baseUrl/users/me'),
@@ -597,8 +621,8 @@ class ApiService {
         body: jsonEncode(updateData),
       );
 
-      print('Update profile response: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Update profile response: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
 
@@ -629,7 +653,67 @@ class ApiService {
         throw Exception(errorMsg);
       }
     } catch (e) {
-      print('Exception in updateProfile: $e');
+      // print('Exception in updateProfile: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> follow(String userId) async {
+    try {
+      final token = await _getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication required. Please log in.');
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/users/follow/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token,
+        },
+      );
+
+      // print('Follow user response: ${response.statusCode}');
+
+      if (response.statusCode != 200) {
+        final responseBody = jsonDecode(response.body);
+        final errorMsg = responseBody is Map 
+            ? responseBody['msg'] ?? 'Failed to follow user'
+            : 'Failed to follow user';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      // print('Exception in follow: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> unfollow(String userId) async {
+    try {
+      final token = await _getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication required. Please log in.');
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/users/unfollow/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token,
+        },
+      );
+
+      // print('Unfollow user response: ${response.statusCode}');
+
+      if (response.statusCode != 200) {
+        final responseBody = jsonDecode(response.body);
+        final errorMsg = responseBody is Map 
+            ? responseBody['msg'] ?? 'Failed to unfollow user'
+            : 'Failed to unfollow user';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      // print('Exception in unfollow: $e');
       rethrow;
     }
   }

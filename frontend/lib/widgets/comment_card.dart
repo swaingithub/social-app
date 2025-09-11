@@ -1,57 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:jivvi/features/post/models/comment.dart';
+import 'package:jivvi/features/user/screens/profile_screen.dart';
 
 class CommentCard extends StatelessWidget {
-  const CommentCard({
-    super.key,
-    required this.username,
-    required this.avatarUrl,
-    required this.comment,
-  });
+  final Comment comment;
 
-  final String username;
-  final String avatarUrl;
-  final String comment;
+  const CommentCard({super.key, required this.comment});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    void goToProfile() {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ProfileScreen(userId: comment.author.id),
+        ),
+      );
+    }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.0),
-        color: colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: NetworkImage(avatarUrl),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  username,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(comment, style: Theme.of(context).textTheme.bodyMedium),
-              ],
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: goToProfile,
+              child: CircleAvatar(
+                radius: 18,
+                backgroundImage: NetworkImage(comment.author.profileImageUrl ?? 'https://via.placeholder.com/150'),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: DefaultTextStyle.of(context).style,
+                      children: [
+                        WidgetSpan(
+                          child: GestureDetector(
+                            onTap: goToProfile,
+                            child: Text(
+                              '${comment.author.username} ',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        TextSpan(text: comment.text),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    comment.timeAgo,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.favorite_border, size: 20, color: Colors.grey),
+              onPressed: () { /* TODO: Implement like comment */ },
+            ),
+          ],
+        ),
       ),
     );
   }

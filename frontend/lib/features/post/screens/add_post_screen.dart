@@ -1,12 +1,11 @@
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:jivvi/providers/post_provider.dart';
-import 'package:jivvi/screens/trending_music_screen.dart';
+import 'package:jivvi/features/post/providers/post_provider.dart';
+import 'package:jivvi/features/misc/screens/trending_music_screen.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -53,14 +52,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.close, size: 30),
-                          onPressed: () => context.pop(),
+                          onPressed: () => Navigator.of(context).pop(),
                           tooltip: 'Cancel',
                         ),
                         Text(
                           'New Post',
                           style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(width: 48), // Balance the close button
+                        const SizedBox(width: 48), // Balance the close button
                       ],
                     ),
                   ),
@@ -140,11 +139,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                           icon: Icons.music_note_outlined,
                           label: _selectedMusic ?? 'Add Music',
                           onTap: () async {
-                            final result = await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const TrendingMusicScreen(),
-                              ),
-                            );
+                            final result = await context.push<String>('/trending-music');
                             if (result != null) {
                               setState(() {
                                 _selectedMusic = result;
@@ -168,30 +163,22 @@ class _AddPostScreenState extends State<AddPostScreen> {
               child: ElevatedButton(
                 onPressed: postProvider.isLoading || _image == null
                     ? null
-                    : () {
-                        final taggedUsers = _taggedUsersController.text.split(',').map((e) => e.trim()).toList();
-                        postProvider.createPost(
-                          caption: _captionController.text,
-                          mediaUrl: _image!.path,
-                          thumbnailUrl: null, // Add this if you have a thumbnail
-                          taggedUserIds: taggedUsers.isNotEmpty ? taggedUsers : null,
-                          music: _selectedMusic,
-                          isVideo: false, // Set this based on your media type
-                          isPrivate: false, // Set this based on your requirements
-                          hashtags: null, // Add this if you have hashtags
-                          mentions: null, // Add this if you have mentions
-                        ).then((post) {
-                          if (mounted) {
-                            context.go('/');
-                          }
-                        }).catchError((error) {
-                          // Handle error if needed
-                          print('Error creating post: $error');
-                          // Optionally show an error message to the user
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to create post: ${error.toString()}')),
+                    : () async {
+                        try {
+                          await postProvider.createPost(
+                            caption: _captionController.text,
+                            image: _image!,
                           );
-                        });
+                          if (mounted) {
+                            context.pop();
+                          }
+                        } catch (error) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Failed to create post: ${error.toString()}')),
+                            );
+                          }
+                        }
                       },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),

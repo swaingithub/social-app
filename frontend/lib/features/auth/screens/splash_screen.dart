@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withAlpha(25),
                         blurRadius: 10,
                         spreadRadius: 2,
                         offset: const Offset(0, 5),
@@ -111,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 Text(
                   'Connect with the world',
                   style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withAlpha(230),
                     fontSize: 16,
                     letterSpacing: 0.5,
                   ),
