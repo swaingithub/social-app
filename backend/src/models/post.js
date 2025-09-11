@@ -1,66 +1,29 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/sequelize');
-const User = require('./user');
+const mongoose = require('mongoose');
 
-const Post = sequelize.define('Post', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+const postSchema = new mongoose.Schema({
+  imageUrl: {
+    type: String,
+    required: true,
   },
   caption: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    default: '',
   },
-  imageUrl: {
-    type: DataTypes.STRING,
-    allowNull: false,
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
   },
-  music: {
-    type: DataTypes.STRING,
-  },
-  authorId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'Users',
-      key: 'id',
-    },
-    onDelete: 'CASCADE',
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  comments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment',
+  }],
+}, {
+  timestamps: true,
 });
 
-// Author relationship
-Post.belongsTo(User, {
-  foreignKey: 'authorId',
-  as: 'author',
-  onDelete: 'CASCADE'
-});
-
-// Many-to-many relationship for likes
-Post.belongsToMany(User, {
-  through: 'PostLikes',
-  as: 'likedBy',
-  foreignKey: 'postId',
-  otherKey: 'userId',
-  timestamps: false,
-});
-
-// User's liked posts
-User.belongsToMany(Post, {
-  through: 'PostLikes',
-  as: 'likedPosts',
-  foreignKey: 'userId',
-  otherKey: 'postId',
-  timestamps: false,
-});
-
-module.exports = Post;
+module.exports = mongoose.model('Post', postSchema);

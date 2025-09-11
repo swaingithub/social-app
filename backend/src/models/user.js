@@ -1,58 +1,37 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/sequelize');
+const mongoose = require('mongoose');
 
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
+const userSchema = new mongoose.Schema({
   username: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true,
     unique: true,
+    trim: true,
   },
   email: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true,
     unique: true,
-    validate: {
-      isEmail: true,
-    },
+    trim: true,
+    lowercase: true,
   },
   password: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true,
   },
   profileImageUrl: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: String,
+    default: '',
   },
-  bio: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  location: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  role: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: 'user',
-  },
-  settings: {
-    type: DataTypes.JSON,
-    allowNull: true,
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+}, {
+  timestamps: true,
 });
 
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);
