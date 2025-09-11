@@ -51,6 +51,52 @@ class ApiService {
     };
   }
 
+  // Lightweight helpers for internal providers (chat)
+  Future<dynamic> _getWithAuth(String path) async {
+    final headers = await _getHeaders();
+    final res = await http.get(Uri.parse('$baseUrl$path'), headers: headers);
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return body['data'] ?? body;
+    }
+    throw Exception('GET $path failed (${res.statusCode})');
+  }
+
+  Future<dynamic> _postWithAuth(String path, Map<String, dynamic> body) async {
+    final headers = await _getHeaders();
+    final res = await http.post(Uri.parse('$baseUrl$path'), headers: headers, body: jsonEncode(body));
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      final data = jsonDecode(res.body);
+      return data['data'] ?? data;
+    }
+    throw Exception('POST $path failed (${res.statusCode})');
+  }
+
+  // Public chat APIs
+  Future<List<dynamic>> getConversations() async {
+    final data = await _getWithAuth('/chat/conversations');
+    return List<dynamic>.from(data ?? []);
+  }
+
+  Future<Map<String, dynamic>> createOrGetConversation(String userId) async {
+    final data = await _postWithAuth('/chat/conversations/$userId', {});
+    return Map<String, dynamic>.from(data ?? {});
+  }
+
+  Future<List<dynamic>> getMessages(String conversationId) async {
+    final data = await _getWithAuth('/chat/messages/$conversationId');
+    return List<dynamic>.from(data ?? []);
+  }
+
+  Future<Map<String, dynamic>> sendChatMessage(String conversationId,
+      {String text = '', String mediaUrl = ''}) async {
+    final data = await _postWithAuth('/chat/messages/$conversationId', {
+      if (text.isNotEmpty) 'text': text,
+      if (mediaUrl.isNotEmpty) 'mediaUrl': mediaUrl,
+    });
+    return Map<String, dynamic>.from(data ?? {});
+  }
+
   Future<List<Article>> fetchNews() async {
     try {
       final response = await http.get(
@@ -233,14 +279,40 @@ class ApiService {
   }
 
   Future<List<Post>> getPosts() async {
-    final response = await http.get(Uri.parse('$baseUrl/posts'));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((post) => Post.fromJson(post)).toList();
-    } else {
-      throw Exception('Failed to load posts');
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/posts'));
+      if (response.statusCode != 200) {
+        throw Exception('Failed with ${response.statusCode}');
+      }
+      final decoded = jsonDecode(response.body);
+      final List<dynamic> list = decoded is List
+          ? decoded
+          : (decoded is Map<String, dynamic> && decoded['data'] is List
+              ? decoded['data']
+              : <dynamic>[]);
+      return list.map((post) => Post.fromJson(Map<String, dynamic>.from(post))).toList();
+    } catch (e) {
+      throw Exception('Failed to load posts: $e');
     }
+  }
+
+  Future<List<Post>> getFeed() async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/feed'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null && token.isNotEmpty) 'x-auth-token': token,
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load feed');
+    }
+    final body = jsonDecode(response.body);
+    final List<dynamic> list = body is Map<String, dynamic> && body['data'] is List
+        ? body['data']
+        : (body is List ? body : <dynamic>[]);
+    return list.map((post) => Post.fromJson(Map<String, dynamic>.from(post))).toList();
   }
 
   Future<Post> createPost({

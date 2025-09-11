@@ -33,9 +33,17 @@ router.post('/:id/follow', auth, followUser);
 // @access  Private
 router.delete('/:id/follow', auth, unfollowUser);
 
-// @route   PUT api/users/profile
-// @desc    Update user profile
-// @access  Private
+// @route   PUT api/users/profile (legacy)
 router.put('/profile', auth, updateProfile);
+
+// @route   PUT api/users/me (frontend expects this)
+router.put('/me', auth, updateProfile);
+
+// Extra routes to match frontend expectations
+// @route   PUT api/users/follow/:id
+router.put('/follow/:id', auth, followUser);
+
+// @route   PUT api/users/unfollow/:id
+router.put('/unfollow/:id', auth, unfollowUser);
 
 module.exports = router;

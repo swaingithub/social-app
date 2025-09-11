@@ -8,8 +8,25 @@ import 'package:jivvi/widgets/post_card.dart';
 import 'package:jivvi/widgets/post_placeholder.dart';
 import 'package:jivvi/providers/user_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch posts on first load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      if (postProvider.posts.isEmpty) {
+        postProvider.fetchPosts();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,23 +35,38 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        toolbarHeight: 64,
+        centerTitle: false,
+        titleSpacing: 16,
         title: Text(
           'Jivvi',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w800,
                 color: Theme.of(context).colorScheme.primary,
+                letterSpacing: 0.3,
               ),
         ),
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.favorite_border),
-            iconSize: 28,
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.send_outlined),
-            iconSize: 28,
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.favorite_border),
+                  iconSize: 26,
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: () => context.push('/messages'),
+                  icon: const Icon(Icons.message_outlined),
+                  iconSize: 26,
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
           ),
         ],
       ),
@@ -121,9 +153,32 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildPostListView(PostProvider postProvider, String? userId) {
     if (postProvider.posts.isEmpty && !postProvider.isLoading) {
-      return const Center(child: Text('No posts yet. Be the first to post!'));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'No posts yet. Pull to refresh.\nIf still empty, open your Profile, then come back and pull again.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              if (userId != null)
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigate to current user's profile
+                    context.push('/profile', extra: userId);
+                  },
+                  child: const Text('Go to Profile'),
+                ),
+            ],
+          ),
+        ),
+      );
     }
     return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 120, top: 8),
       itemCount: postProvider.posts.length,
       itemBuilder: (context, index) {
         final post = postProvider.posts[index];

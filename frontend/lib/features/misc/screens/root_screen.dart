@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:jivvi/providers/user_provider.dart';
 
 class RootScreen extends StatelessWidget {
   const RootScreen({super.key, required this.child});
@@ -31,7 +33,13 @@ class RootScreen extends StatelessWidget {
         context.go('/add-post');
         break;
       case 4:
-        context.go('/profile');
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        final userId = userProvider.user?.id;
+        if (userId != null && userId.isNotEmpty) {
+          context.go('/profile', extra: userId);
+        } else {
+          context.go('/profile');
+        }
         break;
     }
   }
@@ -42,9 +50,17 @@ class RootScreen extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/vectors/noise_texture.svg',
-              fit: BoxFit.cover,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.surface.withAlpha(245),
+                    Theme.of(context).colorScheme.surface.withAlpha(255),
+                  ],
+                ),
+              ),
             ),
           ),
           child,

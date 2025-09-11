@@ -1,19 +1,44 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/sequelize');
+const mongoose = require('mongoose');
 
-const Post = sequelize.define('Post', {
+const postSchema = new mongoose.Schema({
   imageUrl: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true,
+    trim: true
   },
   caption: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: String,
+    default: ''
   },
   music: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: String,
+    default: ''
   },
+  hashtags: [{ type: String, index: true }],
+  likeCount: { type: Number, default: 0, index: true },
+  commentCount: { type: Number, default: 0 },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }]
+}, {
+  collection: 'posts',
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-module.exports = Post;
+// Virtual populate for comments
+postSchema.virtual('comments', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'post'
+});
+
+module.exports = mongoose.model('Post', postSchema);

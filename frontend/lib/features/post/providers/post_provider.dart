@@ -15,9 +15,25 @@ class PostProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _posts = await _apiService.getPosts();
+      // Prefer feed endpoint; fallback to global posts
+      List<Post> fetched = [];
+      try {
+        fetched = await _apiService.getFeed();
+      } catch (_) {
+        fetched = await _apiService.getPosts();
+      }
+      _posts = fetched;
+      if (_posts.isEmpty) {
+        // Fallback: fetch current user's posts
+        try {
+          final me = await _apiService.getMe();
+          if (me != null && me.id != null) {
+            _posts = await _apiService.getPostsByUser(me.id!);
+          }
+        } catch (_) {}
+      }
     } catch (e) {
-      // print(e);
+      _posts = [];
     }
     _isLoading = false;
     notifyListeners();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:go_router/go_router.dart';
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -9,6 +10,12 @@ class ExploreScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Explore'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.message_outlined),
+            onPressed: () => context.go('/stories'),
+          )
+        ],
       ),
       body: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

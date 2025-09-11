@@ -6,11 +6,12 @@ dotenv.config();
 const connectDB = async () => {
   try {
     mongoose.set('strictQuery', true);
-    await mongoose.connect(process.env.MONGO_URI, {
+    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/social_app';
+    await mongoose.connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('MongoDB Connected...');
+    console.log(`MongoDB Connected... (${mongoUri})`);
   } catch (err) {
     console.error(err.message);
     process.exit(1);

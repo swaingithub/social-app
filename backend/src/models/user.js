@@ -90,13 +90,15 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Virtual for follower/following counts
+// Virtual for follower/following counts (tolerant to missing arrays)
 userSchema.virtual('followerCount').get(function() {
-  return this.followers.length;
+  const list = Array.isArray(this.followers) ? this.followers : [];
+  return list.length;
 });
 
 userSchema.virtual('followingCount').get(function() {
-  return this.following.length;
+  const list = Array.isArray(this.following) ? this.following : [];
+  return list.length;
 });
 
 // Method to check if a user follows another user

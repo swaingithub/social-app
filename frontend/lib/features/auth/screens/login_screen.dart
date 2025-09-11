@@ -336,8 +336,8 @@ class _LoginScreenState extends State<LoginScreen> {
       await userProvider.getMe();
       
       if (mounted) {
-        // Navigate to home screen on successful login
-        context.go('/home');
+        // Navigate to root (home) on successful login
+        context.go('/');
       }
     } catch (e) {
       setState(() {

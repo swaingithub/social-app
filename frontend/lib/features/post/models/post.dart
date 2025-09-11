@@ -21,16 +21,26 @@ class Post {
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
+    final media = (json['mediaUrl'] ?? json['imageUrl'] ?? '').toString();
+    final authorData = json['author'];
+    final author = authorData is Map<String, dynamic>
+        ? User.fromJson(authorData)
+        : User.fromJson({'_id': authorData?.toString() ?? '', 'username': 'Unknown'});
+    final likesList = (json['likes'] is List)
+        ? List<String>.from((json['likes'] as List).map((e) => e.toString()))
+        : <String>[];
+    final commentsList = (json['comments'] is List)
+        ? (json['comments'] as List).map((c) => Comment.fromJson(c)).toList()
+        : <Comment>[];
+
     return Post(
-      id: json['_id'],
-      mediaUrl: json['mediaUrl'],
-      caption: json['caption'],
-      author: User.fromJson(json['author']),
-      likes: List<String>.from(json['likes']),
-      comments: (json['comments'] as List)
-          .map((comment) => Comment.fromJson(comment))
-          .toList(),
-      createdAt: DateTime.parse(json['createdAt']),
+      id: json['_id']?.toString() ?? '',
+      mediaUrl: media,
+      caption: json['caption']?.toString() ?? '',
+      author: author,
+      likes: likesList,
+      comments: commentsList,
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
     );
   }
 

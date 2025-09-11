@@ -21,15 +21,22 @@ exports.getFeed = async (req, res) => {
     followingIds.push(req.user.id);
 
     // Get posts from followed users, sorted by creation date (newest first)
-    const posts = await Post.find({ author: { $in: followingIds } })
-      .sort({ createdAt: -1 })
-      .populate('author', 'username profilePicture fullName')
-      .populate('likes', 'username profilePicture')
+    // Mix followed users with recent trending posts
+    const baseQuery = { $or: [
+      { author: { $in: followingIds } },
+      { createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }
+    ]};
+
+    const posts = await Post.find(baseQuery)
+      .sort({ likeCount: -1, createdAt: -1 })
+      .limit(50)
+      .populate('author', 'username profileImageUrl fullName')
+      .populate('likes', 'username profileImageUrl')
       .populate({
         path: 'comments',
         populate: {
           path: 'author',
-          select: 'username profilePicture'
+          select: 'username profileImageUrl'
         },
         options: { sort: { createdAt: -1 } }
       });
@@ -37,7 +44,16 @@ exports.getFeed = async (req, res) => {
     res.json({
       success: true,
       count: posts.length,
-      data: posts
+      data: posts.map(p => ({
+        _id: p._id,
+        mediaUrl: p.imageUrl,
+        caption: p.caption,
+        author: p.author,
+        likes: p.likes,
+        createdAt: p.createdAt,
+        likeCount: p.likeCount,
+        commentCount: p.commentCount,
+      }))
     });
   } catch (err) {
     console.error('Error in getFeed:', err);

@@ -16,6 +16,10 @@ import 'package:jivvi/features/misc/screens/root_screen.dart';
 import 'package:jivvi/features/auth/screens/signup_screen.dart';
 import 'package:jivvi/features/auth/screens/splash_screen.dart';
 import 'package:jivvi/features/misc/screens/stories_screen.dart';
+import 'package:jivvi/features/misc/screens/chat_screen.dart' as chat;
+import 'package:jivvi/features/misc/widgets/conversations_list.dart';
+import 'package:provider/provider.dart';
+import 'package:jivvi/providers/chat_provider.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -61,21 +65,71 @@ class AppRouter {
           ),
           GoRoute(
             path: '/profile',
-            builder: (context, state) => ProfileScreen(userId: state.extra as String),
+            builder: (context, state) {
+              final userProvider = Provider.of<UserProvider>(context, listen: false);
+              final userId = (state.extra as String?) ?? userProvider.user?.id;
+              if (userId == null || userId.isEmpty) {
+                return const Scaffold(
+                  body: Center(child: Text('No user selected')),
+                );
+              }
+              return ProfileScreen(userId: userId);
+            },
           ),
           GoRoute(
             path: '/comments',
-            builder: (context, state) => CommentsScreen(
-              post: state.extra as Post,
-            ),
+            builder: (context, state) {
+              final post = state.extra as Post?;
+              if (post == null) {
+                return const Scaffold(
+                  body: Center(child: Text('No post selected')),
+                );
+              }
+              return CommentsScreen(
+                post: post,
+              );
+            },
+          ),
+          GoRoute(
+            path: '/chat',
+            builder: (context, state) {
+              final conversationId = state.extra as String?;
+              if (conversationId == null || conversationId.isEmpty) {
+                return const Scaffold(
+                  body: Center(child: Text('No conversation selected')),
+                );
+              }
+              return chat.ChatScreen(conversationId: conversationId);
+            },
+          ),
+          GoRoute(
+            path: '/messages',
+            builder: (context, state) {
+              return ChangeNotifierProvider(
+                create: (_) => ChatProvider()..loadConversations(),
+                child: const Scaffold(
+                  appBar: _MessagesAppBar(),
+                  body: ConversationsList(),
+                ),
+              );
+            },
           ),
         ],
       ),
       GoRoute(
         path: '/edit-profile',
-        builder: (context, state) => EditProfileScreen(
-          user: state.extra as User,
-        ),
+        builder: (context, state) {
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          final user = (state.extra as User?) ?? userProvider.user;
+          if (user == null) {
+            return const Scaffold(
+              body: Center(child: Text('No user to edit')),
+            );
+          }
+          return EditProfileScreen(
+            user: user,
+          );
+        },
       ),
     ],
     redirect: (context, state) async {
@@ -103,4 +157,18 @@ class AppRouter {
   );
 
   static GoRouter get router => _router;
+}
+
+class _MessagesAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _MessagesAppBar();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: const Text('Messages'),
+    );
+  }
 }

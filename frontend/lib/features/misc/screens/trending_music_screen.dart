@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
+import 'package:jivvi/core/services/api_service.dart';
 
 class TrendingMusicScreen extends StatefulWidget {
   const TrendingMusicScreen({super.key});
@@ -15,6 +16,7 @@ class TrendingMusicScreen extends StatefulWidget {
 class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final TextEditingController _searchController = TextEditingController();
+  final ApiService _api = ApiService();
   List<dynamic> _tracks = [];
   String? _currentlyPlaying;
   bool _isLoading = false;
@@ -52,7 +54,7 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://localhost:5000/api/spotify/trending'));
+      final response = await http.get(Uri.parse('${_api.baseUrl}/spotify/trending'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -63,13 +65,11 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
         setState(() {
           _isLoading = false;
         });
-        // print('Failed to load trending music');
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      // print('Error fetching trending music: $e');
     }
   }
 
@@ -79,7 +79,7 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://localhost:5000/api/spotify/search?q=$query'));
+      final response = await http.get(Uri.parse('${_api.baseUrl}/spotify/search?q=$query'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -90,13 +90,11 @@ class _TrendingMusicScreenState extends State<TrendingMusicScreen> {
         setState(() {
           _isLoading = false;
         });
-        // print('Failed to load music');
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      // print('Error searching music: $e');
     }
   }
 
