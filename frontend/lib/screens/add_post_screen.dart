@@ -170,17 +170,27 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     ? null
                     : () {
                         final taggedUsers = _taggedUsersController.text.split(',').map((e) => e.trim()).toList();
-                        postProvider
-                            .createPost(
-                          _captionController.text,
-                          _image!.path,
-                          taggedUsers,
-                          _selectedMusic,
-                        )
-                            .then((_) {
+                        postProvider.createPost(
+                          caption: _captionController.text,
+                          mediaUrl: _image!.path,
+                          thumbnailUrl: null, // Add this if you have a thumbnail
+                          taggedUserIds: taggedUsers.isNotEmpty ? taggedUsers : null,
+                          music: _selectedMusic,
+                          isVideo: false, // Set this based on your media type
+                          isPrivate: false, // Set this based on your requirements
+                          hashtags: null, // Add this if you have hashtags
+                          mentions: null, // Add this if you have mentions
+                        ).then((post) {
                           if (mounted) {
                             context.go('/');
                           }
+                        }).catchError((error) {
+                          // Handle error if needed
+                          print('Error creating post: $error');
+                          // Optionally show an error message to the user
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to create post: ${error.toString()}')),
+                          );
                         });
                       },
                 style: ElevatedButton.styleFrom(

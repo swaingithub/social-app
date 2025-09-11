@@ -1,10 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jivvi/models/post.dart';
 import 'package:jivvi/models/user.dart';
 import 'package:jivvi/services/api_service.dart';
 import 'package:jivvi/widgets/post_card.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.userId});
@@ -16,29 +18,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
-  late Future<User> _userFuture;
+  late final Future<User> _userFuture;
   late Future<List<Post>> _postsFuture;
   final ApiService _apiService = ApiService();
-  late TabController _tabController;
-
-  Future<void> _loadUserData() async {
-    try {
-      final user = widget.userId != null 
-          ? await _apiService.getUser(widget.userId!) 
-          : await _apiService.getMe();
-      
-      if (mounted) {
-        setState(() {
-          _userFuture = Future.value(user);
-          _postsFuture = _apiService.getPostsByUser(user.id);
-        });
-      }
-    } catch (e) {
-      // Keep the future in error state to show error UI
-      _userFuture = Future.error(e);
-      setState(() {});
-    }
-  }
+  late final TabController _tabController;
 
   @override
   void initState() {
@@ -46,12 +29,37 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabSelection);
     
-    // Initialize futures in initState
-    _userFuture = widget.userId != null
-        ? _apiService.getUser(widget.userId!)
-        : _apiService.getMe();
-        
-    _postsFuture = _userFuture.then((user) => _apiService.getPostsByUser(user.id));
+    // Initialize user data
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      log('Loading user data...');
+      
+      // Set up user future
+      _userFuture = widget.userId != null
+          ? _apiService.getUser(widget.userId!)
+          : _apiService.getMe();
+
+      // Set up posts future after user is loaded
+      _postsFuture = _userFuture.then((user) {
+        log('User data loaded: ${user.username}');
+        return _apiService.getPostsByUser(user.id);
+      });
+
+      // Trigger a rebuild when the futures complete
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e, stackTrace) {
+      log('Error loading user data', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        setState(() {
+          _userFuture = Future.error(e.toString());
+        });
+      }
+    }
   }
 
   void _handleTabSelection() {
@@ -103,71 +111,95 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildErrorView(String error) {
+    final isUnauthorized = error.contains('401') || error.contains('Not authenticated');
+    
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
+            Icon(
+              isUnauthorized ? Icons.lock_outline : Icons.error_outline,
               size: 64,
-              color: Colors.red,
+              color: isUnauthorized ? Colors.orange : Colors.red,
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load profile',
-              style: TextStyle(
-                fontSize: 18,
+              isUnauthorized ? 'Authentication Required' : 'Failed to Load Profile',
+              style: const TextStyle(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
-              error.contains('401') 
-                ? 'Please log in to view this profile'
-                : 'An error occurred while loading the profile',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _loadUserData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: const Text(
-                'Retry',
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                isUnauthorized 
+                  ? 'Please sign in to view this profile.'
+                  : 'We couldn\'t load the profile. Please check your connection and try again.',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: Colors.grey[700],
+                  height: 1.4,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
-            if (error.contains('401'))
-              TextButton(
-                onPressed: () {
-                  // Navigate to login screen
-                  Navigator.pushReplacementNamed(context, '/login');
-                },
+            const SizedBox(height: 32),
+            if (!isUnauthorized)
+              ElevatedButton(
+                onPressed: _loadUserData,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 0,
+                ),
                 child: const Text(
-                  'Go to Login',
+                  'Try Again',
                   style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 14,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
+            if (isUnauthorized) ...[
+              ElevatedButton(
+                onPressed: () => context.go('/login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Sign In',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => context.go('/register'),
+                child: const Text(
+                  'Create New Account',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

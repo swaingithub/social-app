@@ -1,26 +1,50 @@
 
-const Feed = require('../models/feed');
 const Post = require('../models/post');
 const Relationship = require('../models/relationship');
+const User = require('../models/user');
 
+// @desc    Get user's feed
+// @route   GET /api/feed
+// @access  Private
 exports.getFeed = async (req, res) => {
   try {
-    const following = await Relationship.findAll({ where: { followerId: req.user.id } });
-    const followingIds = following.map(item => item.followingId);
+    // Get all users that the current user is following
+    const relationships = await Relationship.find({ 
+      follower: req.user.id,
+      status: 'accepted' 
+    }).select('following');
 
-    const posts = await Post.find({ author: { $in: followingIds } }).sort({ createdAt: -1 });
+    // Extract the user IDs of the people being followed
+    const followingIds = relationships.map(rel => rel.following);
+    
+    // Add current user's ID to see their own posts in the feed
+    followingIds.push(req.user.id);
 
-    let feed = await Feed.findOne({ user: req.user.id });
-    if (!feed) {
-      feed = await Feed.create({ user: req.user.id });
-    }
+    // Get posts from followed users, sorted by creation date (newest first)
+    const posts = await Post.find({ author: { $in: followingIds } })
+      .sort({ createdAt: -1 })
+      .populate('author', 'username profilePicture fullName')
+      .populate('likes', 'username profilePicture')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'author',
+          select: 'username profilePicture'
+        },
+        options: { sort: { createdAt: -1 } }
+      });
 
-    feed.posts = posts.map(post => post.id);
-    await feed.save();
-
-    res.json(posts);
+    res.json({
+      success: true,
+      count: posts.length,
+      data: posts
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error in getFeed:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+      message: err.message
+    });
   }
 };
