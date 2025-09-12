@@ -68,9 +68,60 @@ class ProfileScreen extends StatelessWidget {
             );
           }
 
+          if (provider.hasError) {
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error Loading Profile',
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      provider.errorMessage ?? 'An unknown error occurred',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                      onPressed: provider.retry,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (provider.user == null) {
-            return const Scaffold(
-              body: Center(child: Text('User not found')),
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.person_off, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    Text(
+                      'User Not Found',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('The requested user could not be found.'),
+                    const SizedBox(height: 24),
+                    TextButton.icon(
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text('Go Back'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ),
             );
           }
 

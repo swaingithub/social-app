@@ -67,12 +67,25 @@ class AppRouter {
           ),
           GoRoute(
             path: '/profile',
-            builder: (context, state) {
+            redirect: (context, state) {
               final userProvider = Provider.of<UserProvider>(context, listen: false);
-              final userId = (state.extra as String?) ?? userProvider.user?.id;
+              final myUserId = userProvider.user?.id;
+              
+              if (myUserId == null) {
+                return '/login';
+              }
+              
+              // Redirect to the profile with the user ID
+              return '/profile/$myUserId';
+            },
+          ),
+          GoRoute(
+            path: '/profile/:userId',
+            builder: (context, state) {
+              final userId = state.pathParameters['userId'];
               if (userId == null || userId.isEmpty) {
                 return const Scaffold(
-                  body: Center(child: Text('No user selected')),
+                  body: Center(child: Text('User ID is missing')),
                 );
               }
               return ProfileScreen(userId: userId);
@@ -116,13 +129,13 @@ class AppRouter {
               );
             },
           ),
-          
         ],
       ),
       GoRoute(
         path: '/edit-profile',
         builder: (context, state) {
-          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          final userProvider =
+              Provider.of<UserProvider>(context, listen: false);
           final user = (state.extra as User?) ?? userProvider.user;
           if (user == null) {
             return const Scaffold(
@@ -135,9 +148,9 @@ class AppRouter {
         },
       ),
       GoRoute(
-            path: '/settings',
-            builder: (context, state) => const SettingsScreen(),
-          ),
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
       GoRoute(
         path: '/post/:id',
         builder: (context, state) {

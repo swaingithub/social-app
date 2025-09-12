@@ -26,13 +26,43 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    // Handle followers - can be either array of strings or array of user objects
+    List<String> parseFollowers(dynamic followersData) {
+      if (followersData == null) return [];
+      if (followersData is List) {
+        return followersData.map((follower) {
+          if (follower is String) return follower;
+          if (follower is Map && follower['_id'] != null) {
+            return follower['_id'].toString();
+          }
+          return '';
+        }).where((id) => id.isNotEmpty).toList();
+      }
+      return [];
+    }
+
+    // Handle following - can be either array of strings or array of user objects
+    List<String> parseFollowing(dynamic followingData) {
+      if (followingData == null) return [];
+      if (followingData is List) {
+        return followingData.map((user) {
+          if (user is String) return user;
+          if (user is Map && user['_id'] != null) {
+            return user['_id'].toString();
+          }
+          return '';
+        }).where((id) => id.isNotEmpty).toList();
+      }
+      return [];
+    }
+
     return User(
       id: json['_id']?.toString(),
       username: json['username']?.toString() ?? 'Unknown User',
       email: json['email']?.toString() ?? '',
       profileImageUrl: json['profileImageUrl']?.toString() ?? 'https://via.placeholder.com/150',
-      followers: List<String>.from(json['followers'] ?? []),
-      following: List<String>.from(json['following'] ?? []),
+      followers: parseFollowers(json['followers']),
+      following: parseFollowing(json['following']),
       posts: List<dynamic>.from(json['posts'] ?? []),
       fullName: json['fullName'],
       bio: json['bio'],

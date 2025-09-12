@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jivvi/features/post/models/comment.dart' as comment_model;
@@ -26,10 +27,28 @@ class ApiService {
     if (path == null || path.isEmpty) {
       return 'https://res.cloudinary.com/demo/image/upload/v1621432348/default-avatar.png';
     }
+    
+    // If it's already a full URL, return as is
     if (path.startsWith('http')) {
       return path;
     }
-    return '$fileBaseUrl$path';
+    
+    // Handle Windows paths if needed
+    String normalizedPath = path.replaceAll(r'\', '/');
+    
+    // Remove leading slashes to prevent double slashes
+    while (normalizedPath.startsWith('/')) {
+      normalizedPath = normalizedPath.substring(1);
+    }
+    
+    // Construct the final URL
+    final url = '$fileBaseUrl/$normalizedPath';
+    
+    if (kDebugMode) {
+      print('Generated image URL: $url');
+    }
+    
+    return url;
   }
 
   Future<String?> _getToken() async {
@@ -501,11 +520,15 @@ class ApiService {
 
   Future<User> getUser(String userId) async {
     try {
-      // print('Fetching user with ID: $userId');
-      // print('Making request to: $baseUrl/users/$userId');
+      if (kDebugMode) {
+        print('🔍 Fetching user with ID: $userId');
+        print('🌐 Making request to: $baseUrl/users/$userId');
+      }
       
       final token = await _getToken();
-      // print('Using token: ${token != null ? 'Token exists' : 'No token'}');
+      if (kDebugMode) {
+        print('🔑 Using token: ${token != null ? 'Token exists' : 'No token found'}');
+      }
       
       final response = await http.get(
         Uri.parse('$baseUrl/users/$userId'),
@@ -515,20 +538,31 @@ class ApiService {
         },
       );
 
-      // print('Response status: ${response.statusCode}');
-      // print('Response body: ${response.body}');
+      if (kDebugMode) {
+        print('📥 Response status: ${response.statusCode}');
+        print('📦 Response body: ${response.body}');
+      }
 
       final responseBody = jsonDecode(response.body);
       
       if (response.statusCode == 200) {
         try {
           if (responseBody is Map<String, dynamic> && responseBody['success'] == true) {
+            if (responseBody['data'] == null) {
+              throw Exception('User data is null in the response');
+            }
             return User.fromJson(responseBody['data']);
           } else {
-            throw Exception(responseBody['msg'] ?? 'Invalid response format');
+            final errorMsg = responseBody['msg'] ?? 'Invalid response format';
+            if (kDebugMode) {
+              print('❌ Error response: $errorMsg');
+            }
+            throw Exception(errorMsg);
           }
         } catch (e) {
-          // print('Error parsing user data: $e');
+          if (kDebugMode) {
+            print('❌ Error parsing user data: $e');
+          }
           throw Exception('Failed to parse user data: $e');
         }
       } else if (response.statusCode == 401) {
