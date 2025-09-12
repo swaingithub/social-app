@@ -215,7 +215,7 @@ class _PostCardState extends State<PostCard> {
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       // Call the API directly since PostProvider doesn't have deletePost method
       final response = await http.delete(
-        Uri.parse('YOUR_API_BASE_URL/posts/${_post.id}'),
+        Uri.parse('${apiService.baseUrl}/posts/${_post.id}'),
         headers: {
           'Content-Type': 'application/json',
           // Add authorization header if needed

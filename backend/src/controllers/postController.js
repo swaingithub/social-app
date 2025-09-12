@@ -193,7 +193,8 @@ exports.addComment = async (req, res) => {
 exports.getPostsByUser = async (req, res) => {
   try {
     const posts = await Post.find({ author: req.params.userId })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate('author', 'username profileImageUrl');
     res.json({ success: true, data: posts });
   } catch (err) {
     console.error(err.message);
