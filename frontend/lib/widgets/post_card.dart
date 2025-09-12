@@ -8,7 +8,6 @@ import 'package:jivvi/features/post/models/post.dart';
 import 'package:jivvi/features/post/providers/post_provider.dart';
 import 'package:jivvi/features/post/screens/comments_screen.dart';
 import 'package:jivvi/features/user/screens/profile_screen.dart';
-import 'package:jivvi/core/constants/app_colors.dart';
 import 'package:share_plus/share_plus.dart';
 
 class PostCard extends StatefulWidget {
@@ -30,6 +29,7 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
+  final ApiService apiService = ApiService();
   late Post _post;
   bool _isBookmarked = false;
   bool _isLiked = false;
@@ -92,7 +92,7 @@ class _PostCardState extends State<PostCard> {
 
   Widget _buildListTile(String title, IconData icon, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primaryColor),
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
       title: Text(title),
       onTap: onTap,
     );
@@ -201,7 +201,7 @@ class _PostCardState extends State<PostCard> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),
@@ -257,7 +257,8 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
-    final profileImageUrl = _post.author.profileImageUrl ?? 'https://via.placeholder.com/150';
+    final profileImageUrl = apiService.getImageUrl(_post.author.profileImageUrl);
+    final mediaUrl = apiService.getImageUrl(_post.mediaUrl);
     final isCurrentUser = widget.userId == _post.author.id;
 
     void _goToComments() {
@@ -280,7 +281,10 @@ class _PostCardState extends State<PostCard> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
+      ),
       color: Theme.of(context).colorScheme.surface.withAlpha(240),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +316,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                       Text(
                         _post.timeAgo, // Using the timeAgo getter
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12),
                       ),
                     ],
                   ),
@@ -342,23 +346,22 @@ class _PostCardState extends State<PostCard> {
             child: GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(
+                                    MaterialPageRoute(
                     builder: (_) => _FullScreenImage(
-                      imageUrl: _post.mediaUrl,
+                      imageUrl: mediaUrl,
                     ),
-                  ),
-                );
+                ));
               },
               child: _post.mediaUrl.isNotEmpty
                 ? Image.network(
-                    _post.mediaUrl,
+                    mediaUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: 300,
                     errorBuilder: (context, error, stackTrace) => Container(
                       height: 300,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.error_outline, color: Colors.grey),
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                      child: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     ),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
@@ -369,7 +372,7 @@ class _PostCardState extends State<PostCard> {
                   )
                 : Container(
                     height: 300,
-                    color: Colors.grey[200],
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                     child: const Center(child: Icon(Icons.image_not_supported)),
                   ),
             ),
@@ -386,13 +389,13 @@ class _PostCardState extends State<PostCard> {
                     IconButton(
                       icon: Icon(
                         _isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: _isLiked ? AppColors.likeRed : Colors.grey,
+                        color: _isLiked ? Colors.red : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         size: 30,
                       ),
                       onPressed: _toggleLike,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.chat_bubble_outline, size: 30, color: Colors.grey),
+                      icon: Icon(Icons.chat_bubble_outline, size: 30, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                       onPressed: _goToComments,
                     ),
                     const SizedBox(width: 2),
@@ -402,7 +405,7 @@ class _PostCardState extends State<PostCard> {
                   icon: Icon(
                     _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                     size: 26,
-                    color: _isBookmarked ? AppColors.primaryColor : Colors.grey,
+                    color: _isBookmarked ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
                   onPressed: _toggleBookmark,
                 ),
@@ -448,7 +451,7 @@ class _PostCardState extends State<PostCard> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 'View all ${_post.comments.length} ${_post.comments.length == 1 ? 'comment' : 'comments'}',
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
               ),
             ),
           ),
@@ -469,12 +472,12 @@ class _PostCardState extends State<PostCard> {
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, i) {
                     final r = items[i];
-                    final url = (r['mediaUrl'] ?? '').toString();
+                    final url = apiService.getImageUrl((r['mediaUrl'] ?? '').toString());
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: url.isNotEmpty
                         ? Image.network(url, width: 90, height: 110, fit: BoxFit.cover)
-                        : Container(width: 90, height: 110, color: Colors.grey[200]),
+                        : Container(width: 90, height: 110, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1)),
                     );
                   },
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
@@ -511,11 +514,11 @@ class _FullScreenImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: Theme.of(context).iconTheme,
       ),
       body: Center(
         child: InteractiveViewer(
@@ -531,8 +534,8 @@ class _FullScreenImage extends StatelessWidget {
                 child: CircularProgressIndicator(),
               );
             },
-            errorBuilder: (context, error, stackTrace) => const Center(
-              child: Icon(Icons.error_outline, color: Colors.white, size: 40),
+            errorBuilder: (context, error, stackTrace) => Center(
+              child: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.onSurface, size: 40),
             ),
           ),
         ),

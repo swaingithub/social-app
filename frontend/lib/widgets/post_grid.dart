@@ -43,9 +43,7 @@ class PostGrid extends StatelessWidget {
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
               builder: (context) => PostDetailScreen(
-                post: post,
-                initialIndex: index,
-                posts: posts,
+                postId: post.id,
               ),
             );
           },

@@ -11,6 +11,14 @@ class PostProvider with ChangeNotifier {
   List<Post> get posts => _posts;
   bool get isLoading => _isLoading;
 
+  Post? getPostById(String id) {
+    try {
+      return _posts.firstWhere((post) => post.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> fetchPosts() async {
     _isLoading = true;
     notifyListeners();

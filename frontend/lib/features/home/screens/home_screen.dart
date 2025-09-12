@@ -72,11 +72,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(38),
+              color: Theme.of(context).shadowColor.withAlpha(38),
               blurRadius: 30,
               spreadRadius: 2,
               offset: const Offset(0, 10),
@@ -94,15 +94,12 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
-      )
-          .animate()
-          .scale(
+      ).animate().scale(
             begin: const Offset(0.95, 0.95),
             end: const Offset(1, 1),
             curve: Curves.easeOutBack,
             duration: 600.ms,
-          )
-          .fadeIn(delay: 300.ms),
+          ).fadeIn(delay: 300.ms),
       floatingActionButton: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -133,9 +130,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.add_rounded,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
               size: 32,
             ),
           ),
@@ -189,8 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPostPlaceholders(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Theme.of(context).colorScheme.surface.withAlpha(128),
-      highlightColor: Theme.of(context).colorScheme.surface.withAlpha(204),
+      baseColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+      highlightColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.15),
       child: ListView.builder(
         itemCount: 5,
         itemBuilder: (context, index) => const PostPlaceholder(),

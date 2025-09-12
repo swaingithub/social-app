@@ -1,16 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:jivvi/features/auth/models/user.dart';
 import 'package:jivvi/providers/profile_provider.dart';
 import 'package:jivvi/providers/user_provider.dart';
 import 'package:jivvi/features/user/screens/edit_profile_screen.dart';
+import 'package:jivvi/features/user/screens/settings_screen.dart';
 import 'package:jivvi/widgets/post_grid.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String userId;
 
   const ProfileScreen({super.key, required this.userId});
+
+  void _showMoreOptions(BuildContext context, User user, bool isCurrentUser) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (context) {
+        return Wrap(
+          children: <Widget>[
+            if (!isCurrentUser) ...[
+              ListTile(
+                leading: const Icon(Icons.report),
+                title: const Text('Report'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Handle report action
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.block),
+                title: const Text('Block'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Handle block action
+                },
+              ),
+            ],
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Share Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                Share.share('Check out this profile: /user/${user.id}');
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,28 +81,45 @@ class ProfileScreen extends StatelessWidget {
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              title: Text(user.username ?? 'Profile'),
+              title: Text(
+                user.username ?? 'Profile',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
               actions: [
                 if (isCurrentUser)
-                  IconButton(
-                    icon: const Icon(Icons.logout),
-                    tooltip: 'Log out',
-                    onPressed: () async {
-                      await userProvider.logout();
-                      if (context.mounted) {
-                        GoRouter.of(context).go('/login');
+                  PopupMenuButton<String>(
+                    icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurface),
+                    onSelected: (value) async {
+                      if (value == 'settings') {
+                        GoRouter.of(context).push('/settings');
+                      } else if (value == 'logout') {
+                        await userProvider.logout();
+                        if (context.mounted) {
+                          GoRouter.of(context).go('/login');
+                        }
                       }
                     },
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'settings',
+                        child: Text('Settings'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'logout',
+                        child: Text('Log out'),
+                      ),
+                    ],
                   ),
               ],
             ),
             body: DefaultTabController(
-              length: 3,
+              length: 5,
               child: Column(
                 children: [
                   // Hero header
                   Container(
-                    height: 220,
+                    height: MediaQuery.of(context).size.height > 700 ? 235 : 200,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -91,40 +149,37 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      user.fullName?.isNotEmpty == true
-                                          ? user.fullName!
-                                          : (user.username ?? 'Profile'),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Row(
-                                      children: [
-                                        _StatChip(
-                                            label: 'Posts',
-                                            value: provider.posts.length),
-                                        const SizedBox(width: 8),
-                                        _StatChip(
-                                            label: 'Followers',
-                                            value: user.followers.length),
-                                        const SizedBox(width: 8),
-                                        _StatChip(
-                                            label: 'Following',
-                                            value: user.following.length),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    user.fullName?.isNotEmpty == true
+                                        ? user.fullName!
+                                        : (user.username ?? 'Profile'),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      _StatChip(
+                                          label: 'Posts',
+                                          value: provider.posts.length),
+                                      const SizedBox(width: 8),
+                                      _StatChip(
+                                          label: 'Followers',
+                                          value: user.followers.length),
+                                      const SizedBox(width: 8),
+                                      _StatChip(
+                                          label: 'Following',
+                                          value: user.following.length),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -155,8 +210,8 @@ class ProfileScreen extends StatelessWidget {
                                   icon: const Icon(Icons.edit, size: 18),
                                   label: const Text('Edit Profile'),
                                   style: ElevatedButton.styleFrom(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(12)),
@@ -177,18 +232,18 @@ class ProfileScreen extends StatelessWidget {
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(12)),
                                   ),
                                   child: Text(
                                     (Provider.of<UserProvider>(context)
-                                            .user
-                                            ?.following
-                                            .contains(user.id) ??
-                                        false)
+                                                .user
+                                                ?.following
+                                                .contains(user.id) ??
+                                            false)
                                         ? 'Unfollow'
                                         : 'Follow',
                                   ),
@@ -196,7 +251,8 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             const SizedBox(width: 12),
                             OutlinedButton(
-                              onPressed: () {},
+                              onPressed: () =>
+                                  _showMoreOptions(context, user, isCurrentUser),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 14, vertical: 12),
@@ -207,7 +263,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 4),
                         Text(
                           user.bio ?? '',
                           style: Theme.of(context).textTheme.bodyMedium,
@@ -216,18 +272,20 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   // Tabs and content
-                  const SizedBox(height: 8),
-                  const SizedBox(
-                    height: 40, // Fixed height for the tab bar
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 40,
                     child: TabBar(
-                      labelColor: Colors.black,
-                      unselectedLabelColor: Colors.grey,
-                      indicatorColor: Colors.purple,
+                      labelColor: Theme.of(context).colorScheme.primary,
+                      unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      indicatorColor: Theme.of(context).colorScheme.primary,
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelPadding: EdgeInsets.zero,
-                      tabs: [
+                      tabs: const [
                         Tab(icon: Icon(Icons.grid_on, size: 24)),
                         Tab(icon: Icon(Icons.play_circle_outline, size: 24)),
+                        Tab(icon: Icon(Icons.bookmark_border, size: 24)),
+                        Tab(icon: Icon(Icons.favorite_border, size: 24)),
                         Tab(icon: Icon(Icons.tag, size: 24)),
                       ],
                     ),
@@ -237,15 +295,20 @@ class ProfileScreen extends StatelessWidget {
                       children: [
                         // All posts
                         PostGrid(posts: provider.posts),
-                        // Videos: simple filter by file extension
+                        // Videos
                         PostGrid(
                           posts: provider.posts
-                              .where((p) => p.mediaUrl.toLowerCase().endsWith('.mp4') ||
+                              .where((p) =>
+                                  p.mediaUrl.toLowerCase().endsWith('.mp4') ||
                                   p.mediaUrl.toLowerCase().endsWith('.mov') ||
                                   p.mediaUrl.toLowerCase().endsWith('.webm'))
                               .toList(),
                         ),
-                        // Tagged: captions containing '#'
+                        // Saved Posts (placeholder)
+                        const Center(child: Text('Saved posts will appear here.')),
+                        // Liked Posts (placeholder)
+                        const Center(child: Text('Liked posts will appear here.')),
+                        // Tagged Posts
                         PostGrid(
                           posts: provider.posts
                               .where((p) => p.caption.contains('#'))
@@ -276,11 +339,11 @@ class _StatChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black12),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         children: [
-          Text(label, style: const TextStyle(color: Colors.black54)),
+          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
           const SizedBox(height: 6),
           Text(
             value.toString(),

@@ -10,13 +10,26 @@ import 'package:jivvi/features/news/models/article.dart';
 
 class ApiService {
   late final String baseUrl;
+  late final String fileBaseUrl;
 
   ApiService() {
     if (Platform.isAndroid) {
       baseUrl = 'http://10.0.2.2:5000/api';
+      fileBaseUrl = 'http://10.0.2.2:5000';
     } else {
       baseUrl = 'http://localhost:5000/api';
+      fileBaseUrl = 'http://localhost:5000';
     }
+  }
+
+  String getImageUrl(String? path) {
+    if (path == null || path.isEmpty) {
+      return 'https://res.cloudinary.com/demo/image/upload/v1621432348/default-avatar.png';
+    }
+    if (path.startsWith('http')) {
+      return path;
+    }
+    return '$fileBaseUrl$path';
   }
 
   Future<String?> _getToken() async {
