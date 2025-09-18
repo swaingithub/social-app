@@ -6,18 +6,20 @@ class UserProvider with ChangeNotifier {
   final ApiService apiService;
   User? _user;
   bool _isLoading = false;
+  List<String> _bookmarkedPostIds = [];
 
   UserProvider(this.apiService);
 
   User? get user => _user;
   bool get isLoading => _isLoading;
+  List<String> get bookmarkedPostIds => _bookmarkedPostIds;
 
   Future<void> register(String username, String email, String password) async {
     _isLoading = true;
     notifyListeners();
     try {
       await apiService.register(username, email, password);
-      _user = await apiService.getMe();
+      await getMe();
     } catch (e) {
       rethrow;
     } finally {
@@ -30,7 +32,8 @@ class UserProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _user = await apiService.login(email, password);
+      await apiService.login(email, password);
+      await getMe();
     } catch (e) {
       rethrow;
     } finally {
@@ -44,11 +47,22 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> fetchBookmarkedPosts() async {
+    try {
+      final posts = await apiService.getBookmarkedPosts();
+      _bookmarkedPostIds = posts.map((post) => post.id).toList();
+      notifyListeners();
+    } catch (e) {
+      // Handle error, maybe log it
+    }
+  }
+
   Future<void> getMe() async {
     _isLoading = true;
     notifyListeners();
     try {
       _user = await apiService.getMe();
+      await fetchBookmarkedPosts();
     } catch (e) {
       // Handle error
     } finally {
