@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:jivvi/core/services/api_service.dart';
 import 'package:jivvi/features/post/models/post.dart';
+import 'package:jivvi/features/post/models/comment.dart' as comment_model;
 
 class PostProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -80,6 +81,29 @@ class PostProvider with ChangeNotifier {
       }
     } catch (e) {
       // Handle error
+    }
+  }
+
+  Future<List<comment_model.Comment>> getComments(String postId) async {
+    try {
+      return await _apiService.getComments(postId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> addComment(String postId, String text) async {
+    try {
+      await _apiService.addComment(postId: postId, text: text);
+      final index = _posts.indexWhere((p) => p.id == postId);
+      if (index != -1) {
+        final post = _posts[index];
+        final updatedPost = post.copyWith(commentCount: post.commentCount + 1);
+        _posts[index] = updatedPost;
+        notifyListeners();
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 }
