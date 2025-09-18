@@ -56,6 +56,9 @@ class ApiService {
     return prefs.getString('token');
   }
 
+  // Public method to get the authentication token
+  Future<String?> getToken() => _getToken();
+
   Future<void> _setToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
