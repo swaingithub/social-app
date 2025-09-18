@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe, getUserById, followUser, unfollowUser, updateProfile } = require('../controllers/userController');
+const { register, login, getMe, getUserById, updateUser, followUser, unfollowUser, searchUsers, getFollowers, getFollowing, getBookmarkedPosts } = require('../controllers/userController');
 const auth = require('../middleware/auth');
 
 // @route   POST api/users/register
@@ -17,6 +17,11 @@ router.post('/login', login);
 // @desc    Get current user
 // @access  Private
 router.get('/me', auth, getMe);
+
+// @route   GET api/users/me/bookmarks
+// @desc    Get current user's bookmarked posts
+// @access  Private
+router.get('/me/bookmarks', auth, getBookmarkedPosts);
 
 // @route   GET api/users/:id
 // @desc    Get user by ID

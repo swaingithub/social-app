@@ -43,6 +43,25 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.getBookmarkedPosts = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate({
+      path: 'bookmarks',
+      populate: {
+        path: 'author',
+        select: 'username profileImageUrl'
+      }
+    });
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    res.json({ success: true, data: user.bookmarks });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 

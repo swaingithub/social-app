@@ -101,64 +101,57 @@ class _PostCardState extends State<PostCard> {
   Future<void> _toggleLike() async {
     if (widget.userId == null) return;
 
+    final originalIsLiked = _isLiked;
     setState(() {
       _isLiked = !_isLiked;
-      if (_isLiked) {
-        _post = _post.copyWith(
-          likes: [..._post.likes, widget.userId!]
-        );
-      } else {
-        _post = _post.copyWith(
-          likes: _post.likes.where((id) => id != widget.userId).toList()
-        );
-      }
     });
 
     try {
-      final postProvider = Provider.of<PostProvider>(context, listen: false);
-      await postProvider.toggleLike(_post.id, widget.userId!);
-      
-      // Refresh the post data after the like action
+      final updatedPost = await apiService.toggleLike(_post.id, originalIsLiked);
       if (mounted) {
-        final updatedPost = _post.copyWith(
-          likes: _isLiked 
-              ? _post.likes.where((id) => id != widget.userId).toList()
-              : [..._post.likes, widget.userId!]
-        );
-        
         setState(() {
           _post = updatedPost;
-          _isLiked = !_isLiked;
+          _isLiked = _post.isLikedBy(widget.userId!);
         });
         widget.onPostUpdated?.call(_post);
       }
     } catch (e) {
-      // Revert on error
       setState(() {
-        _isLiked = !_isLiked;
+        _isLiked = originalIsLiked;
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update like')),
+          SnackBar(content: Text('Failed to update like: ${e.toString()}')),
         );
       }
     }
   }
 
   Future<void> _toggleBookmark() async {
-    // TODO: Implement actual bookmark toggle with API
+    final originalIsBookmarked = _isBookmarked;
     setState(() {
       _isBookmarked = !_isBookmarked;
     });
 
-    // Show feedback
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isBookmarked ? 'Post saved' : 'Post removed from saved'),
-          duration: const Duration(seconds: 1),
-        ),
-      );
+    try {
+      await apiService.toggleBookmark(_post.id, originalIsBookmarked);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isBookmarked ? 'Post saved' : 'Post removed from saved'),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isBookmarked = originalIsBookmarked;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update bookmark: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -450,7 +443,7 @@ class _PostCardState extends State<PostCard> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                'View all ${_post.comments.length} ${_post.comments.length == 1 ? 'comment' : 'comments'}',
+                'View all ${_post.commentCount} ${_post.commentCount == 1 ? 'comment' : 'comments'}',
                 style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
               ),
             ),

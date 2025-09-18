@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { createPost, getPosts, getPostById, deletePost, likePost, unlikePost, addComment, getPostsByUser, getComments, getRelatedPosts } = require('../controllers/postController');
+const { createPost, getPosts, getPostById, deletePost, likePost, unlikePost, addComment, getPostsByUser, getComments, getRelatedPosts, bookmarkPost, unbookmarkPost } = require('../controllers/postController');
 const auth = require('../middleware/auth');
 
 // @route   POST api/posts
@@ -33,6 +33,16 @@ router.put('/like/:id', auth, likePost);
 // @desc    Unlike a post
 // @access  Private
 router.put('/unlike/:id', auth, unlikePost);
+
+// @route   PUT api/posts/bookmark/:id
+// @desc    Bookmark a post
+// @access  Private
+router.put('/bookmark/:id', auth, bookmarkPost);
+
+// @route   PUT api/posts/unbookmark/:id
+// @desc    Unbookmark a post
+// @access  Private
+router.put('/unbookmark/:id', auth, unbookmarkPost);
 
 // @route   POST api/posts/comment/:id
 // @desc    Comment on a post

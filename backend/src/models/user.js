@@ -58,6 +58,11 @@ const userSchema = new mongoose.Schema({
     ref: 'User',
     default: []
   }],
+  bookmarks: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post',
+    default: []
+  }],
   isPrivate: {
     type: Boolean,
     default: false
