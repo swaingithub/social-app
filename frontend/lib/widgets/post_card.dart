@@ -40,7 +40,8 @@ class _PostCardState extends State<PostCard> {
     super.initState();
     _post = widget.post;
     _isLiked = widget.userId != null && _post.isLikedBy(widget.userId!);
-    // Load saved state from local storage if needed
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    _isBookmarked = userProvider.bookmarkedPostIds.contains(_post.id);
   }
 
   @override
@@ -136,6 +137,8 @@ class _PostCardState extends State<PostCard> {
     try {
       await apiService.toggleBookmark(_post.id, originalIsBookmarked);
       if (mounted) {
+        // Update the provider
+        Provider.of<UserProvider>(context, listen: false).fetchBookmarkedPosts();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_isBookmarked ? 'Post saved' : 'Post removed from saved'),

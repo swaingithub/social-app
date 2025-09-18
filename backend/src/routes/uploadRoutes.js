@@ -20,14 +20,28 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage }).single('file');
 
-router.post('/upload', auth, upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ msg: 'No file uploaded' });
-  }
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({ mediaUrl: fileUrl });
+router.post('/upload', auth, (req, res) => {
+  console.log('Upload request received');
+  upload(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      console.error('Multer error:', err);
+      return res.status(500).json({ msg: 'A Multer error occurred when uploading.' });
+    } else if (err) {
+      console.error('Unknown error during upload:', err);
+      return res.status(500).json({ msg: 'An unknown error occurred when uploading.' });
+    }
+
+    if (!req.file) {
+      console.log('No file uploaded');
+      return res.status(400).json({ msg: 'No file uploaded' });
+    }
+
+    console.log('File uploaded successfully:', req.file);
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.json({ mediaUrl: fileUrl });
+  });
 });
 
 module.exports = router;
