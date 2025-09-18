@@ -205,25 +205,34 @@ exports.unbookmarkPost = async (req, res) => {
 }
 
 exports.addComment = async (req, res) => {
+  console.log('addComment called with postId:', req.params.id);
+  console.log('Request body:', req.body);
+  console.log('User ID:', req.user.id);
   try {
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ msg: 'Post not found' });
+    if (!post) {
+      console.log('Post not found');
+      return res.status(404).json({ msg: 'Post not found' });
+    }
 
     const newComment = await Comment.create({
       text: req.body.text,
       author: req.user.id,
       post: post._id
     });
+    console.log('New comment created:', newComment);
 
     post.commentCount = (post.commentCount || 0) + 1;
     await post.save();
+    console.log('Post commentCount updated');
 
     const populated = await Comment.findById(newComment._id)
       .populate('author', 'username profileImageUrl');
+    console.log('Populated comment:', populated);
 
     res.status(201).json({ success: true, data: populated });
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in addComment:', err.message);
     res.status(500).send('Server Error');
   }
 };
@@ -274,17 +283,22 @@ exports.getRelatedPosts = async (req, res) => {
 
 // Fetch comments for a post
 exports.getComments = async (req, res) => {
+  console.log('getComments called with postId:', req.params.id);
   try {
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ msg: 'Post not found' });
+    if (!post) {
+      console.log('Post not found in getComments');
+      return res.status(404).json({ msg: 'Post not found' });
+    }
 
     const comments = await Comment.find({ post: post._id })
       .sort({ createdAt: -1 })
       .populate('author', 'username profileImageUrl');
+    console.log('Found comments:', comments);
 
     res.json({ success: true, data: comments });
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in getComments:', err.message);
     res.status(500).send('Server Error');
   }
 };

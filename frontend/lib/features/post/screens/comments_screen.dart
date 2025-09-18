@@ -25,22 +25,26 @@ class _CommentsScreenState extends State<CommentsScreen> {
   }
 
   void _fetchComments() {
+    print('CommentsScreen: _fetchComments called');
     final postProvider = Provider.of<PostProvider>(context, listen: false);
     _commentsFuture = postProvider.getComments(widget.post.id);
   }
 
   Future<void> _addComment() async {
     if (_commentController.text.isEmpty) return;
+    print('CommentsScreen: _addComment called');
 
     final postProvider = Provider.of<PostProvider>(context, listen: false);
     try {
       await postProvider.addComment(widget.post.id, _commentController.text);
       _commentController.clear();
       setState(() {
+        print('CommentsScreen: refreshing comments after adding');
         _fetchComments();
       });
     } catch (e) {
       if (mounted) {
+        print('CommentsScreen: Error adding comment: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add comment: ${e.toString()}')),
         );
