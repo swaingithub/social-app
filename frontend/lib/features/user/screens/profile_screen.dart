@@ -8,6 +8,7 @@ import 'package:jivvi/providers/user_provider.dart';
 import 'package:jivvi/features/user/screens/edit_profile_screen.dart';
 import 'package:jivvi/features/user/screens/settings_screen.dart';
 import 'package:jivvi/widgets/post_grid.dart';
+import 'package:jivvi/widgets/bookmarked_posts_grid.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String userId;
@@ -355,8 +356,8 @@ class ProfileScreen extends StatelessWidget {
                                   p.mediaUrl.toLowerCase().endsWith('.webm'))
                               .toList(),
                         ),
-                        // Saved Posts (placeholder)
-                        const Center(child: Text('Saved posts will appear here.')),
+                        // Saved Posts
+                        const BookmarkedPostsGrid(),
                         // Liked Posts (placeholder)
                         const Center(child: Text('Liked posts will appear here.')),
                         // Tagged Posts

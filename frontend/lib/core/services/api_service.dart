@@ -409,8 +409,8 @@ class ApiService {
     }
   }
 
-  // Like a post
-  Future<Post> likePost(String postId) async {
+  Future<Post> toggleLike(String postId, bool isLiked) async {
+    final endpoint = isLiked ? 'unlike' : 'like';
     try {
       final token = await _getToken();
       if (token == null || token.isEmpty) {
@@ -418,15 +418,12 @@ class ApiService {
       }
 
       final response = await http.put(
-        Uri.parse('$baseUrl/posts/like/$postId'),
+        Uri.parse('$baseUrl/posts/$endpoint/$postId'),
         headers: {
           'Content-Type': 'application/json',
           'x-auth-token': token,
         },
       );
-
-      // print('Like post response: ${response.statusCode}');
-      // print('Response body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
 
@@ -442,78 +439,78 @@ class ApiService {
       } else if (response.statusCode == 404) {
         throw Exception('Post not found');
       } else {
-        final errorMsg = responseBody is Map 
-            ? responseBody['msg'] ?? 'Failed to like post'
-            : 'Failed to like post';
-        throw Exception(errorMsg);
-      }
-    } catch (e) {
-      // print('Exception in likePost: $e');
-      rethrow;
-    }
-  }
-
-  // Unlike a post
-  Future<Post?> unlikePost(String postId) async {
-    try {
-      final token = await _getToken();
-      final response = await http.put(
-        Uri.parse('$baseUrl/posts/unlike/$postId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token ?? '',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return Post.fromJson(jsonDecode(response.body));
-      }
-      return null;
-    } catch (e) {
-      // print('Error unliking post: $e');
-      return null;
-    }
-  }
-
-  Future<Post> toggleLike(String postId) async {
-    try {
-      final token = await _getToken();
-      if (token == null || token.isEmpty) {
-        throw Exception('Authentication required. Please log in.');
-      }
-
-      final response = await http.put(
-        Uri.parse('$baseUrl/posts/like/$postId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token,
-        },
-      );
-
-      // print('Toggle like response: ${response.statusCode}');
-      // print('Response body: ${response.body}');
-
-      final responseBody = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        if (responseBody is Map<String, dynamic> && responseBody['success'] == true) {
-          return Post.fromJson(responseBody['data']);
-        } else {
-          throw Exception(responseBody['msg'] ?? 'Invalid response format');
-        }
-      } else if (response.statusCode == 401) {
-        await clearToken();
-        throw Exception('Session expired. Please log in again.');
-      } else if (response.statusCode == 404) {
-        throw Exception('Post not found');
-      } else {
-        final errorMsg = responseBody is Map 
+        final errorMsg = responseBody is Map
             ? responseBody['msg'] ?? 'Failed to toggle like'
             : 'Failed to toggle like';
         throw Exception(errorMsg);
       }
     } catch (e) {
-      // print('Exception in toggleLike: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> toggleBookmark(String postId, bool isBookmarked) async {
+    final endpoint = isBookmarked ? 'unbookmark' : 'bookmark';
+    try {
+      final token = await _getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication required. Please log in.');
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/posts/$endpoint/$postId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        final responseBody = jsonDecode(response.body);
+        final errorMsg = responseBody is Map
+            ? responseBody['msg'] ?? 'Failed to toggle bookmark'
+            : 'Failed to toggle bookmark';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Post>> getBookmarkedPosts() async {
+    try {
+      final token = await _getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication required. Please log in.');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/users/me/bookmarks'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token,
+        },
+      );
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        if (responseBody is Map<String, dynamic> && responseBody['success'] == true) {
+          final List<dynamic> posts = responseBody['data'] ?? [];
+          return posts.map((post) => Post.fromJson(post)).toList();
+        } else {
+          throw Exception(responseBody['msg'] ?? 'Invalid response format');
+        }
+      } else if (response.statusCode == 401) {
+        await clearToken();
+        throw Exception('Session expired. Please log in again.');
+      } else {
+        final errorMsg = responseBody is Map
+            ? responseBody['msg'] ?? 'Failed to load bookmarks'
+            : 'Failed to load bookmarks';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
       rethrow;
     }
   }

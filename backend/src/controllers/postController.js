@@ -166,6 +166,44 @@ exports.unlikePost = async (req, res) => {
   }
 };
 
+exports.bookmarkPost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    const user = await User.findById(req.user.id);
+    if (user.bookmarks.some(b => b.toString() === post._id.toString())) {
+      return res.status(400).json({ msg: 'Post already bookmarked' });
+    }
+
+    user.bookmarks.push(post._id);
+    await user.save();
+    res.json({ success: true, data: user.bookmarks });
+  } catch (err) {
+    console.error('Bookmark error:', err);
+    res.status(500).send('Server Error');
+  }
+}
+
+exports.unbookmarkPost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: 'Post not found' });
+
+    const user = await User.findById(req.user.id);
+    if (!user.bookmarks.some(b => b.toString() === post._id.toString())) {
+      return res.status(400).json({ msg: 'Post not bookmarked' });
+    }
+
+    user.bookmarks = user.bookmarks.filter(b => b.toString() !== post._id.toString());
+    await user.save();
+    res.json({ success: true, data: user.bookmarks });
+  } catch (err) {
+    console.error('Unbookmark error:', err);
+    res.status(500).send('Server Error');
+  }
+}
+
 exports.addComment = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
