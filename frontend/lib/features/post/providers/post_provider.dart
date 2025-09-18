@@ -5,8 +5,10 @@ import 'package:jivvi/features/post/models/post.dart';
 import 'package:jivvi/features/post/models/comment.dart' as comment_model;
 
 class PostProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
   List<Post> _posts = [];
+
+  PostProvider(this._apiService);
   bool _isLoading = false;
 
   List<Post> get posts => _posts;

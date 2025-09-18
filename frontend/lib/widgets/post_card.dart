@@ -29,7 +29,6 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
-  final ApiService apiService = ApiService();
   late Post _post;
   bool _isBookmarked = false;
   bool _isLiked = false;
@@ -102,6 +101,7 @@ class _PostCardState extends State<PostCard> {
   Future<void> _toggleLike() async {
     if (widget.userId == null) return;
 
+    final apiService = Provider.of<ApiService>(context, listen: false);
     final originalIsLiked = _isLiked;
     setState(() {
       _isLiked = !_isLiked;
@@ -129,6 +129,7 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _toggleBookmark() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
     final originalIsBookmarked = _isBookmarked;
     setState(() {
       _isBookmarked = !_isBookmarked;
@@ -208,7 +209,7 @@ class _PostCardState extends State<PostCard> {
     setState(() => _isDeleting = true);
 
     try {
-      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final apiService = Provider.of<ApiService>(context, listen: false);
       // Call the API directly since PostProvider doesn't have deletePost method
       final response = await http.delete(
         Uri.parse('${apiService.baseUrl}/posts/${_post.id}'),
@@ -253,6 +254,7 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
+    final apiService = Provider.of<ApiService>(context, listen: false);
     final profileImageUrl = apiService.getImageUrl(_post.author.profileImageUrl);
     final mediaUrl = apiService.getImageUrl(_post.mediaUrl);
     final isCurrentUser = widget.userId == _post.author.id;
@@ -490,7 +492,7 @@ class _PostCardState extends State<PostCard> {
 
   Future<List<Map<String, dynamic>>> _fetchRelated(String postId) async {
     try {
-      final api = ApiService();
+      final api = Provider.of<ApiService>(context, listen: false);
       final res = await http.get(Uri.parse('${api.baseUrl}/posts/$postId/related'));
       if (res.statusCode != 200) return [];
       final body = jsonDecode(res.body) as Map<String, dynamic>;
