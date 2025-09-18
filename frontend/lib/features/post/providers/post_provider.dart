@@ -71,16 +71,16 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  Future<void> toggleLike(String postId, String userId) async {
+  Future<void> toggleLike(String postId, bool isLiked) async {
     try {
-      final post = await _apiService.toggleLike(postId, false);
+      final post = await _apiService.toggleLike(postId, isLiked);
       final index = _posts.indexWhere((p) => p.id == postId);
       if (index != -1) {
         _posts[index] = post;
         notifyListeners();
       }
     } catch (e) {
-      // print(e);
+      // Handle error
     }
   }
 
