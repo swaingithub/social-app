@@ -208,6 +208,12 @@ exports.addComment = async (req, res) => {
   console.log('addComment called with postId:', req.params.id);
   console.log('Request body:', req.body);
   console.log('User ID:', req.user.id);
+
+  if (!req.body.text || req.body.text.trim() === '') {
+    console.log('Comment text is missing or empty');
+    return res.status(400).json({ msg: 'Comment text is required.' });
+  }
+
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
@@ -221,6 +227,14 @@ exports.addComment = async (req, res) => {
       post: post._id
     });
     console.log('New comment created:', newComment);
+
+    // Verify that the comment was saved
+    const foundComment = await Comment.findById(newComment._id);
+    if (!foundComment) {
+      console.error('CRITICAL: Comment was not saved to the database!');
+      return res.status(500).json({ msg: 'Failed to save comment.' });
+    }
+    console.log('Successfully verified that comment was saved.');
 
     post.commentCount = (post.commentCount || 0) + 1;
     await post.save();
