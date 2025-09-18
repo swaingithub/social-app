@@ -8,6 +8,7 @@ class Post {
   final User author;
   final List<String> likes;
   final List<Comment> comments;
+  final int commentCount;
   final DateTime createdAt;
 
   Post({
@@ -17,6 +18,7 @@ class Post {
     required this.author,
     required this.likes,
     required this.comments,
+    required this.commentCount,
     required this.createdAt,
   });
 
@@ -45,6 +47,7 @@ class Post {
       author: author,
       likes: likesList,
       comments: commentsList,
+      commentCount: json['commentCount'] as int? ?? 0,
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
     );
   }
@@ -64,8 +67,6 @@ class Post {
   bool isLikedBy(String userId) {
     return likes.contains(userId);
   }
-
-  int get commentCount => comments.length;
 
   String get timeAgo {
     final difference = DateTime.now().difference(createdAt);
@@ -87,6 +88,7 @@ class Post {
     User? author,
     List<String>? likes,
     List<Comment>? comments,
+    int? commentCount,
     DateTime? createdAt,
   }) {
     return Post(
@@ -96,6 +98,7 @@ class Post {
       author: author ?? this.author,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
+      commentCount: commentCount ?? this.commentCount,
       createdAt: createdAt ?? this.createdAt,
     );
   }

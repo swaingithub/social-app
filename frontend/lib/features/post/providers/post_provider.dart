@@ -71,30 +71,36 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  Future<void> toggleLike(String postId, bool isLiked) async {
+  Future<void> toggleLike(String postId, String userId) async {
     try {
-      final post = await _apiService.toggleLike(postId, isLiked);
+      final post = await _apiService.toggleLike(postId, false);
       final index = _posts.indexWhere((p) => p.id == postId);
       if (index != -1) {
         _posts[index] = post;
         notifyListeners();
       }
     } catch (e) {
-      // Handle error
+      // print(e);
     }
   }
 
   Future<List<comment_model.Comment>> getComments(String postId) async {
+    print('PostProvider: getComments called for postId: $postId');
     try {
-      return await _apiService.getComments(postId);
+      final comments = await _apiService.getComments(postId);
+      print('PostProvider: getComments received ${comments.length} comments');
+      return comments;
     } catch (e) {
+      print('PostProvider: Error in getComments: $e');
       rethrow;
     }
   }
 
   Future<void> addComment(String postId, String text) async {
+    print('PostProvider: addComment called for postId: $postId with text: $text');
     try {
       await _apiService.addComment(postId: postId, text: text);
+      print('PostProvider: addComment successful');
       final index = _posts.indexWhere((p) => p.id == postId);
       if (index != -1) {
         final post = _posts[index];
@@ -103,6 +109,7 @@ class PostProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+      print('PostProvider: Error in addComment: $e');
       rethrow;
     }
   }
