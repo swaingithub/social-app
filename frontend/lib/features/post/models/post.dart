@@ -60,6 +60,8 @@ class Post {
     return likes.contains(userId);
   }
 
+  int get commentCount => comments.length;
+
   String get timeAgo {
     final difference = DateTime.now().difference(createdAt);
     if (difference.inDays > 0) {
