@@ -27,7 +27,12 @@ class Post {
         ? User.fromJson(authorData)
         : User.fromJson({'_id': authorData?.toString() ?? '', 'username': 'Unknown'});
     final likesList = (json['likes'] is List)
-        ? List<String>.from((json['likes'] as List).map((e) => e.toString()))
+        ? List<String>.from((json['likes'] as List).map((e) {
+            if (e is Map<String, dynamic>) {
+              return e['_id']?.toString() ?? '';
+            }
+            return e.toString();
+          }))
         : <String>[];
     final commentsList = (json['comments'] is List)
         ? (json['comments'] as List).map((c) => Comment.fromJson(c)).toList()
