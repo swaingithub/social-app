@@ -98,7 +98,7 @@ class PostProvider with ChangeNotifier {
       final index = _posts.indexWhere((p) => p.id == postId);
       if (index != -1) {
         final post = _posts[index];
-        final updatedPost = post.copyWith(commentCount: post.commentCount + 1);
+        final updatedPost = post.copyWith(comments: [...post.comments, comment_model.Comment(id: '', text: text, author: post.author, createdAt: DateTime.now())]);
         _posts[index] = updatedPost;
         notifyListeners();
       }
