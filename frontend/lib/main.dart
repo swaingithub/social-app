@@ -20,9 +20,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<ApiService>(create: (_) => ApiService()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => PostProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider(ApiService())),
+        ChangeNotifierProxyProvider<ApiService, PostProvider>(
+          create: (context) => PostProvider(Provider.of<ApiService>(context, listen: false)),
+          update: (context, apiService, previous) => PostProvider(apiService),
+        ),
+        ChangeNotifierProxyProvider<ApiService, UserProvider>(
+          create: (context) => UserProvider(Provider.of<ApiService>(context, listen: false)),
+          update: (context, apiService, previous) => UserProvider(apiService),
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, __) {
