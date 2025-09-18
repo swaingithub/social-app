@@ -91,6 +91,7 @@ class UserProvider with ChangeNotifier {
     String? bio,
     String? location,
     String? website,
+    String? profileImageUrl,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -101,6 +102,7 @@ class UserProvider with ChangeNotifier {
         bio: bio,
         location: location,
         website: website,
+        profileImageUrl: profileImageUrl,
       );
       _user = updatedUser;
     } catch (e) {

@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:jivvi/features/auth/models/user.dart';
 import 'package:jivvi/providers/user_provider.dart';
+import 'package:jivvi/core/services/api_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final User user;
@@ -14,12 +17,15 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+  final ImagePicker _picker = ImagePicker();
   late TextEditingController _usernameController;
   late TextEditingController _fullNameController;
   late TextEditingController _bioController;
   late TextEditingController _locationController;
   late TextEditingController _websiteController;
   bool _isLoading = false;
+  File? _imageFile;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -41,6 +47,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _saveProfile() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -48,12 +75,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
 
       try {
+        String? imageUrl;
+        
+        // Upload new profile image if selected
+        if (_imageFile != null) {
+          setState(() {
+            _isUploading = true;
+          });
+          
+          try {
+            imageUrl = await Provider.of<ApiService>(context, listen: false)
+                .uploadImage(_imageFile!);
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to upload image: $e')),
+              );
+              return;
+            }
+          } finally {
+            if (mounted) {
+              setState(() {
+                _isUploading = false;
+              });
+            }
+          }
+        }
+
+        // Update profile with new data including the new image URL
         await Provider.of<UserProvider>(context, listen: false).updateProfile(
           username: _usernameController.text,
           fullName: _fullNameController.text,
           bio: _bioController.text,
           location: _locationController.text,
           website: _websiteController.text,
+          profileImageUrl: imageUrl,
         );
 
         if (mounted) {
@@ -98,9 +154,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: NetworkImage(widget.user.profileImageUrl ?? 'https://via.placeholder.com/150'),
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: _imageFile != null
+                              ? FileImage(_imageFile!)
+                              : NetworkImage(widget.user.profileImageUrl ?? 'https://via.placeholder.com/150') as ImageProvider,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+                              onPressed: _isLoading ? null : _pickImage,
+                            ),
+                          ),
+                        ),
+                        if (_isUploading)
+                          const Positioned.fill(
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
