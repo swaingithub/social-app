@@ -10,26 +10,27 @@ import 'package:jivvi/features/auth/models/user.dart';
 import 'package:jivvi/features/news/models/article.dart';
 
 class ApiService {
-  late final String baseUrl;
-  late final String fileBaseUrl;
+  final String baseUrl;
+  final String fileBaseUrl;
 
-  ApiService() {
-    if (Platform.isAndroid) {
-      baseUrl = 'http://10.0.2.2:5000/api';
-      fileBaseUrl = 'http://10.0.2.2:5000';
-    } else {
-      baseUrl = 'http://localhost:5000/api';
-      fileBaseUrl = 'http://localhost:5000';
-    }
-  }
+  ApiService()
+      : baseUrl = Platform.isAndroid
+            ? 'http://10.0.2.2:5000/api'
+            : 'http://localhost:5000/api',
+        fileBaseUrl = Platform.isAndroid
+            ? 'http://10.0.2.2:5000'
+            : 'http://localhost:5000';
 
   String getImageUrl(String? path) {
+    print('getImageUrl called with path: $path');
     if (path == null || path.isEmpty) {
+      print('getImageUrl returning default image');
       return 'https://res.cloudinary.com/demo/image/upload/v1621432348/default-avatar.png';
     }
     
     // If it's already a full URL, return as is
     if (path.startsWith('http')) {
+      print('getImageUrl returning path as is: $path');
       return path;
     }
     
