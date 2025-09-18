@@ -36,21 +36,23 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
 
     _controller.forward();
-    _navigateToHome();
+    _checkAuthStatus();
   }
 
-  Future<void> _navigateToHome() async {
-    // Add any initialization logic here (e.g., loading user data, checking auth status)
-    await Future.delayed(const Duration(seconds: 3));
-    
+  Future<void> _checkAuthStatus() async {
+    // Wait for the animation to play for a bit
+    await Future.delayed(const Duration(milliseconds: 1500));
+
     if (mounted) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final isLoggedIn = userProvider.user != null;
+      final isLoggedIn = await userProvider.checkLoginStatus();
       
-      if (isLoggedIn) {
-        GoRouter.of(context).go('/');
-      } else {
-        GoRouter.of(context).go('/login');
+      if (mounted) {
+        if (isLoggedIn) {
+          GoRouter.of(context).go('/');
+        } else {
+          GoRouter.of(context).go('/login');
+        }
       }
     }
   }
@@ -75,7 +77,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App logo/icon would go here
                 Container(
                   width: 120,
                   height: 120,
@@ -94,7 +95,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   child: const Icon(
                     Icons.people_alt_rounded,
                     size: 60,
-                    color: Colors.purple, // Match your theme color
+                    color: Colors.purple,
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -115,6 +116,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     fontSize: 16,
                     letterSpacing: 0.5,
                   ),
+                ),
+                const SizedBox(height: 50),
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ],
             ),

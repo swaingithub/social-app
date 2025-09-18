@@ -159,28 +159,6 @@ class AppRouter {
         },
       ),
     ],
-    redirect: (context, state) async {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      final loggedIn = token != null;
-
-      final isLoggingIn = state.matchedLocation == '/login';
-      final isSigningUp = state.matchedLocation == '/signup';
-
-      if (!loggedIn && !isLoggingIn && !isSigningUp) {
-        return '/login';
-      }
-
-      if (loggedIn && (isLoggingIn || isSigningUp)) {
-        if (userProvider.user == null) {
-          await userProvider.getMe();
-        }
-        return '/';
-      }
-
-      return null;
-    },
   );
 
   static GoRouter get router => _router;

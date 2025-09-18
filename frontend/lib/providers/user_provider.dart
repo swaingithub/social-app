@@ -130,4 +130,17 @@ class UserProvider with ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<bool> checkLoginStatus() async {
+    try {
+      final token = await apiService.getToken();
+      if (token != null && token.isNotEmpty) {
+        await getMe();
+        return _user != null;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 }

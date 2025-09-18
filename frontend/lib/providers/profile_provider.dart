@@ -37,32 +37,24 @@ class ProfileProvider with ChangeNotifier {
       if (kDebugMode) {
         print('📡 Fetching profile for user: $userId');
       }
-      
-      // Fetch user data
-      _user = await _apiService.getUser(userId);
-      
+
+      // Fetch user data and posts in parallel
+      final results = await Future.wait([
+        _apiService.getUser(userId),
+        _apiService.getPostsByUser(userId),
+      ]);
+
+      _user = results[0] as User;
+      _posts = results[1] as List<Post>;
+
       if (_user == null) {
         throw Exception('User data is null');
       }
-      
+
       if (kDebugMode) {
         print('✅ Successfully fetched user: ${_user?.username} (${_user?.id})');
+        print('📝 Fetched ${_posts.length} posts for user: $userId');
       }
-      
-      // Fetch user posts in parallel
-      try {
-        _posts = await _apiService.getPostsByUser(userId);
-        if (kDebugMode) {
-          print('📝 Fetched ${_posts.length} posts for user: $userId');
-        }
-      } catch (postError) {
-        // Don't fail the whole request if posts fail to load
-        if (kDebugMode) {
-          print('⚠️ Error fetching posts: $postError');
-        }
-        _posts = [];
-      }
-      
     } catch (e) {
       _hasError = true;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
